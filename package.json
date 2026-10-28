@@ -1,0 +1,11 @@
+{
+  "name": "pr-track-2d",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Local 2D motion tracking panel for Adobe Premiere Pro 2026 on Windows",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:engine": "python -m unittest discover -s tests -p test_*.py -v",
+    "check": "node --check extension/js/bridge.js && node --check extension/js/mapping.js && node --check extension/js/panel.js && node --check extension/js/updates.js"
+  }
+}

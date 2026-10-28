@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="vn.prtrack" ExtensionBundleVersion="0.5.0" ExtensionBundleName="PR Track 2D">
+  <ExtensionList><Extension Id="vn.prtrack.panel" Version="0.5.0"/></ExtensionList>
+  <ExecutionEnvironment>
+    <HostList><Host Name="PPRO" Version="[26.0,26.9]"/></HostList>
+    <LocaleList><Locale Code="All"/></LocaleList>
+    <RequiredRuntimeList><RequiredRuntime Name="CSXS" Version="12.0"/></RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList><Extension Id="vn.prtrack.panel"><DispatchInfo>
+    <Resources>
+      <MainPath>./index.html</MainPath>
+      <ScriptPath>./jsx/host.jsx</ScriptPath>
+      <CEFCommandLine><Parameter>--enable-nodejs</Parameter><Parameter>--mixed-context</Parameter></CEFCommandLine>
+    </Resources>
+    <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+    <UI><Type>Panel</Type><Menu>PR Track 2D</Menu><Geometry>
+      <Size><Width>480</Width><Height>780</Height></Size>
+      <MinSize><Width>340</Width><Height>540</Height></MinSize>
+    </Geometry></UI>
+  </DispatchInfo></Extension></DispatchInfoList>
+</ExtensionManifest>

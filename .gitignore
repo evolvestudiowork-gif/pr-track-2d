@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+test-output/
+extension/config.json
+
+.build-env/
+build/
+extension/runtime/
