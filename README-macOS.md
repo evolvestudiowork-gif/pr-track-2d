@@ -7,11 +7,11 @@ Phần hỗ trợ macOS đã được bổ sung vào source. **Chưa có runtime
 1. Giải nén Source Kit và đưa toàn bộ source lên repo, giữ cả `.github/workflows/build-macos.yml`.
 2. Repo hiện chỉ chứa README/Releases thì cần thêm source trước; không upload `.build-env`, `build`, runtime Windows hoặc `dist`.
 3. Mở **Actions → Build macOS standalone → Run workflow**.
-4. Workflow chạy độc lập trên `macos-15` (Apple Silicon) và `macos-15-intel` (Intel), build native và kiểm thử engine. Workflow không tự publish Release.
+4. Workflow chạy độc lập trên `macos-26` (Apple Silicon) và `macos-15-intel` (Intel), build native và kiểm thử engine. Workflow không tự publish Release.
 5. Khi cả hai job thành công, tải Artifacts. Mỗi artifact chứa ZIP standalone thật và SHA256.
 6. Giải nén artifact ngoài để lấy ZIP `PR-Track-2D-<version>-macOS-arm64-Standalone.zip` hoặc `...-macOS-x86_64-Standalone.zip`, rồi đính kèm ZIP đó vào GitHub Release.
 
-Build bằng runner macOS 15: phạm vi đầu tiên cần kiểm chứng là macOS 15 trở lên với Premiere Pro 2026. Chưa cam kết chạy trên bản macOS cũ hơn.
+Build trên runner macOS 26 (Apple Silicon) và macOS 15 (Intel). Engine được kiểm thử trên runner đó; phiên bản macOS tối thiểu và tích hợp Premiere cần kiểm chứng trên máy thật.
 
 ## Cài trên Mac sau khi build thành công
 
