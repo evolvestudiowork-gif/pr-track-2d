@@ -1,6 +1,6 @@
 # PR Track 2D 🌸
 
-Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows**, giúp gắn Text / Graphic theo chuyển động trong video.
+Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows và macOS**, giúp gắn Text / Graphic theo chuyển động trong video.
 
 [**Tải phiên bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Lịch sử cập nhật](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
@@ -18,13 +18,16 @@ Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows**, gi�
 
 ## Yêu cầu
 
-- Windows 64-bit và Adobe Premiere Pro 2026 (26.x), có CEP 12.
+- Windows 64-bit hoặc macOS Apple Silicon/Intel, Adobe Premiere Pro 2026 (26.x), có CEP 12.
+- Engine Mac đã kiểm thử trên runner macOS 26 (Apple Silicon) và macOS 15 (Intel); Premiere/Gatekeeper trên máy Mac thực tế cần kiểm chứng riêng.
 - Video có tốc độ Frame cố định (CFR), pixel vuông, tốc độ phát 100%, không phát ngược.
 - Nếu video đã dùng speed ramp, Warp Stabilizer hoặc Scale to Frame Size, hãy xuất thành video trước khi Tracking.
 
 **Đây là bản beta CEP chưa ký số.** Máy mới cần cho phép extension CEP phát triển. Bộ cài chỉ kiểm tra thiết lập này và thông báo nếu chưa đáp ứng; không tự thay đổi registry.
 
 ## Tải và cài đặt
+
+### Windows
 
 1. Mở [Latest Release](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest).
 2. Trong **Assets**, tải `PR-Track-2D-<version>-Windows-Standalone.zip`.
@@ -35,6 +38,17 @@ Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows**, gi�
 Không chọn gói **Source code (zip)** hoặc **Source code (tar.gz)** mà GitHub tự tạo. Bộ cài standalone nằm trong ZIP được đính kèm riêng ở Assets.
 
 Không chạy bộ cài ngay bên trong ZIP và không tách file EXE khỏi thư mục runtime.
+
+### macOS
+
+Trong [Release v0.5.0](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.0), tải đúng gói:
+
+- **Apple Silicon (M1/M2/M3/M4…):** `PR-Track-2D-0.5.0-macOS-arm64-Standalone.zip`.
+- **Intel:** `PR-Track-2D-0.5.0-macOS-x86_64-Standalone.zip`.
+
+Giải nén toàn bộ bằng Finder, đóng Premiere rồi mở **Install-PRTrack.command**. Không cần cài Python. CEP chạy qua Rosetta cần gói x86_64.
+
+Engine đã được build và kiểm thử native trên GitHub Actions, gồm Tracking hai chiều, Scale/Rotation và Estimated. Chưa kiểm tra tích hợp trong Premiere trên Mac thật. Bản beta chưa có Developer ID/notarization; macOS có thể chặn file tải từ Internet. Installer không gỡ quarantine hoặc tắt Gatekeeper, và không tự bật CEP development mode.
 
 ## Cách sử dụng
 

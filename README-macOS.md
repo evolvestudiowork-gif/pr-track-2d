@@ -1,6 +1,6 @@
 # PR Track 2D v0.5.0 — macOS preview
 
-Phần hỗ trợ macOS đã được bổ sung vào source. **Chưa có runtime macOS được build hoặc kiểm thử trên máy hiện tại (Windows).** Gói Source Kit không phải bộ cài chạy ngay.
+Đã có ZIP standalone native cho Apple Silicon và Intel tại Release v0.5.0. Cả hai engine đã qua kiểm thử trên runner macOS, không cần Python trên máy nhận. Chưa kiểm tra tích hợp Premiere/Gatekeeper trên Mac thật. Source Kit là source để build lại, không phải bộ cài.
 
 ## Tạo bộ cài qua GitHub Actions
 
