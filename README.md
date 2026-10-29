@@ -4,6 +4,10 @@ Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows và ma
 
 [**Tải phiên bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Lịch sử cập nhật](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
+## Giao diện v0.5.1
+
+Source → Preview → Channels → Track → Target → Apply. Chọn riêng Backward / Track Both / Forward; Use Selected Graphic giữ đích Apply theo ID dù đổi selection trên Timeline. Remove Tracking khôi phục lần Apply gần nhất, giữ dữ liệu Track. Apply hiện rõ lý do khi chưa sẵn sàng; Advanced và Updates tách riêng.
+
 ## Tính năng
 
 - **Tracking hai chiều:** chọn vùng tại một Frame mốc, tự Track ngược về đầu và tiến đến cuối phần clip trên Timeline.
@@ -75,7 +79,7 @@ Plugin phân tích từ Frame mốc đến cuối clip, rồi từ Frame mốc n
 - Tạo hoặc chọn Text / Graphic trên Timeline.
 - Nếu Graphic phủ Frame mốc, đặt chữ tại **Frame mốc** trước khi Apply.
 - Nếu Graphic không phủ Frame mốc, đặt chữ tại **Frame đầu phần giao** giữa Graphic và đoạn Tracking.
-- Chọn Graphic, bấm **Apply to Selected Graphic**.
+- Chọn Graphic, bấm **Use Selected Graphic**, rồi **Apply**.
 
 Graphic không cần dài bằng video. Phần giao với dữ liệu Tracking cần có ít nhất **2 Frame**.
 
@@ -83,7 +87,7 @@ Với Caption, chuyển sang Graphic trước khi Apply. Plugin di chuyển cả
 
 ### 4. Reset
 
-Bấm **Reset Tracking** để gỡ các Keyframe của lần Apply gần nhất và khôi phục giá trị ban đầu của các thuộc tính đã áp dụng.
+Bấm **Remove Tracking** để gỡ các Keyframe của lần Apply gần nhất và khôi phục giá trị ban đầu của các thuộc tính đã áp dụng.
 
 Reset chỉ nhớ lần Apply gần nhất trong phiên hiện tại. Nếu các Keyframe đó đã được chỉnh sửa thủ công, plugin sẽ từ chối tự Reset để bảo vệ thay đổi.
 

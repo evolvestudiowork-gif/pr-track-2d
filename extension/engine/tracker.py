@@ -401,6 +401,14 @@ def run_bidirectional(request, progress=lambda event: None):
     seed = round(number(request.get('seedOffset'), 'Frame mốc') * fps)
     if seed < 0 or seed >= count:
         raise ValueError('Frame mốc nằm ngoài clip.')
+    tracking_direction = request.get('direction', 'both')
+    if tracking_direction not in ('both', 'forward', 'backward'):
+        raise ValueError('Hướng Tracking không hợp lệ.')
+    low = seed if tracking_direction == 'forward' else 0
+    high = seed if tracking_direction == 'backward' else count-1
+    total = high-low+1
+    if total < 2:
+        raise ValueError('Đã ở biên clip. Chọn hướng Track khác để có ít nhất 2 Frame.')
     if request.get('mode', 'position') not in ('position', 'transform'):
         raise ValueError('Tracking Mode không hợp lệ.')
     video = Video(request.get('path'))
@@ -430,13 +438,14 @@ def run_bidirectional(request, progress=lambda event: None):
                 for frame_index in range(first+1,index+1):
                     cache[frame_index] = video.next()
             return cache[index]
-        for direction in (1,-1):
+        directions = (1,-1) if tracking_direction == 'both' else ((1,) if tracking_direction == 'forward' else (-1,))
+        for pass_index, direction in enumerate(directions):
             tracker = SimilarityTracker(seed_frame, request.get('roi'))
             estimated = tracker.reference_std < 1
             confidence = 0.0 if estimated else 1.0
             velocity = np.zeros(2)
             current_source = source_indices[seed]
-            if direction == 1:
+            if pass_index == 0:
                 points[seed] = track_point(tracker,seed/fps,confidence,estimated)
                 done = 1
             for sample in range(seed+direction,count if direction>0 else -1,direction):
@@ -460,7 +469,7 @@ def run_bidirectional(request, progress=lambda event: None):
                 except (ValueError,cv2.error) as error:
                     return dict(complete=False,reason=str(error),points=[p for p in points if p is not None],
                                 expected=count,metadata=video.metadata(),image=jpeg(sample_frame),
-                                failure=dict(kind='video_read_error',sourceFrame=current_source,engine='0.5.0'))
+                                failure=dict(kind='video_read_error',sourceFrame=current_source,engine='0.5.1'))
                 if current_source == source_indices[seed]:
                     frame = seed_frame
                 elif wanted in cache and direction < 0:
@@ -470,12 +479,15 @@ def run_bidirectional(request, progress=lambda event: None):
                 display,sample_frame = sample,frame
                 now = time.monotonic()
                 if now-last_progress>=0.2 or sample in (0,count-1):
-                    progress(dict(type='progress',done=done,total=count,index=sample,
+                    progress(dict(type='progress',done=done,total=total,index=sample-low,
                                   direction='forward' if direction>0 else 'backward',
                                   point=points[sample],image=jpeg(frame)))
                     last_progress = now
             for method,value in tracker.methods.items(): methods[method]+=value
-        return dict(complete=True,points=points,expected=count,seedIndex=seed,displayIndex=display,
+        points = points[low:high+1]
+        for point in points: point['t'] -= low/fps
+        return dict(complete=True,points=points,expected=total,seedIndex=seed-low,displayIndex=display-low,
+                    analyzedStartOffset=low/fps, direction=tracking_direction,
                     methods=methods,estimatedFrames=sum(p['estimated'] for p in points),
                     lostSourceFrames=lost,metadata=video.metadata(),image=jpeg(sample_frame))
     finally:
@@ -520,7 +532,7 @@ def run_track(request, progress=lambda event: None):
                     frame = video.next()
                 except ValueError as exc:
                     return dict(complete=False, reason=str(exc), methods=tracker.methods,
-                                failure=dict(kind='video_read_error',sourceFrame=video.index,engine='0.5.0'),
+                                failure=dict(kind='video_read_error',sourceFrame=video.index,engine='0.5.1'),
                                 points=points, expected=count, metadata=video.metadata(), image=jpeg(sample_frame))
                 before = np.array(tracker.center())
                 was_estimated = estimated
@@ -551,7 +563,7 @@ def run_track(request, progress=lambda event: None):
 def handle(request):
     command = request.get("command")
     if command == "check":
-        return dict(python=sys.version.split()[0], opencv=cv2.__version__, executable=sys.executable, engine='0.5.0', tracking='LK + adaptive template/ECC + ORB')
+        return dict(python=sys.version.split()[0], opencv=cv2.__version__, executable=sys.executable, engine='0.5.1', tracking='LK + adaptive template/ECC + ORB')
     if command == "preview":
         video = Video(request.get("path"))
         try:

@@ -276,6 +276,31 @@ class TrackerTests(unittest.TestCase):
                 self.assertAlmostEqual(p['scale'],(1+i*0.006)/(1+seed*0.006),delta=0.03)
                 self.assertAlmostEqual(p['rotation'],(i-seed)*0.8,delta=1.5)
 
+    def test_directional_tracking_slices_time_and_reference_correctly(self):
+        with tempfile.TemporaryDirectory() as folder:
+            video=Path(folder)/'directions.avi'
+            writer=cv2.VideoWriter(str(video),cv2.VideoWriter_fourcc(*'MJPG'),30,(400,240))
+            self.assertTrue(writer.isOpened())
+            for frame in synthetic_frames(30): writer.write(frame)
+            writer.release()
+            for direction,low,high in [('forward',12,29),('backward',0,12),('both',0,29)]:
+                events=[]
+                result=tracker.run_track(dict(path=str(video),start=0,duration=1,fps=30,seedOffset=12/30,
+                    roi=[78,86,56,56],direction=direction),events.append)
+                self.assertTrue(result['complete'])
+                self.assertEqual(len(result['points']),high-low+1)
+                self.assertEqual(result['seedIndex'],12-low)
+                self.assertAlmostEqual(result['analyzedStartOffset'],low/30)
+                self.assertEqual(events[-1]['done'],high-low+1)
+                self.assertEqual(events[-1]['total'],high-low+1)
+                for j,p in enumerate(result['points']):
+                    self.assertAlmostEqual(p['t'],j/30)
+                    self.assertAlmostEqual(p['x'],82+2*(low+j),delta=1)
+            for direction,seed in [('forward',29),('backward',0)]:
+                with self.assertRaises(ValueError):
+                    tracker.run_track(dict(path=str(video),start=0,duration=1,fps=30,seedOffset=seed/30,
+                        roi=[54,74,56,56],direction=direction))
+
     def test_duration_limit(self):
         with self.assertRaises(ValueError):
             tracker.run_track(dict(start=0, duration=10000, fps=120))

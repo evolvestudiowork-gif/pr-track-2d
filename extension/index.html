@@ -8,30 +8,31 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header><div class="brand"><span class="mark">+</span><div><h1>PR TRACK <span>2D</span></h1><p>Chọn điểm → Tracking → Apply.</p></div></div><span class="badge">BETA 0.5.0</span></header>
+  <header><div class="brand"><span class="mark">+</span><div><h1>PR TRACK <span>2D</span></h1><p>Chọn điểm → Tracking → Apply.</p></div></div><span class="badge">BETA 0.5.1</span></header>
   <main>
     <section class="workspace">
-      <div class="source-toolbar"><strong id="clipName">Chưa chọn Source</strong><button id="sourceButton" class="secondary compact">Get Selected Clip</button></div>
+      <div class="source-toolbar"><strong id="clipName">Source: Chưa chọn clip</strong><button id="sourceButton" class="secondary compact">Use Selected Clip</button></div>
       <p id="sourceStatus" class="source-status" hidden></p>
       <div class="source-meta"><span id="clipMeta">Đặt Playhead trong video rồi chọn Source.</span><span id="hostState" class="muted">Premiere Pro 2026</span></div>
       <div class="viewport" id="viewport"><canvas id="preview" width="960" height="540" aria-label="Kéo chuột khoanh vùng điểm cần Tracking"></canvas><div id="emptyPreview"><span class="viewfinder">⌖</span><strong>Chọn một điểm có chi tiết rõ</strong><p>Kéo chuột khoanh vùng trên Preview để bắt đầu.</p></div></div>
       <div class="preview-footer"><span id="frameLabel">SOURCE</span><button id="previewButton" class="text-button" disabled>Update Frame</button></div>
       <input id="scrub" class="scrub" aria-label="Xem lại kết quả Tracking" type="range" min="0" max="0" value="0" disabled>
-      <div class="tracking-state"><progress id="progress" max="100" value="0" aria-label="Tiến độ Tracking"></progress><div id="status" role="status" aria-live="polite">Chọn Source để bắt đầu.</div><div class="tracking-meta"><span id="roiLabel">Kéo để khoanh vùng</span><span id="confidence">X / Y</span></div></div>
       <fieldset class="tracking-options"><legend>TRACKING CHANNELS</legend>
-        <label><input id="trackPosition" type="checkbox" checked><span class="channel-name">Position</span><span class="channel-description">Di chuyển theo điểm Tracking</span></label>
-        <label><input id="trackScale" type="checkbox"><span class="channel-name">Scale</span><span class="channel-description">Thay đổi kích thước</span></label>
-        <label><input id="trackRotation" type="checkbox"><span class="channel-name">Rotation</span><span class="channel-description">Xoay theo chuyển động</span></label>
+        <label><input id="trackPosition" type="checkbox" checked><span class="channel-name">Position</span></label>
+        <label><input id="trackScale" type="checkbox"><span class="channel-name">Scale</span></label>
+        <label><input id="trackRotation" type="checkbox"><span class="channel-name">Rotation</span></label>
       </fieldset>
-      <div class="actions tracking-actions"><div class="track-toggle"><button id="trackButton" class="secondary wide" disabled>◀ Track Both Directions ▶</button><button id="cancelButton" class="secondary wide" disabled hidden>■ Stop</button></div><button id="removeButton" class="secondary" disabled>Reset Tracking</button></div>
-      <button id="applyButton" class="primary wide" disabled>Apply to Selected Graphic</button>
-      <p class="hint">Đặt chữ tại Frame mốc nếu Graphic phủ Frame đó; nếu không, dùng Frame đầu phần giao. Chọn Graphic trên Timeline rồi Apply. Chỉ phần giao với đoạn Tracking được áp dụng.</p>
+      <div id="trackDirections" class="track-directions"><button id="backwardButton" class="secondary" disabled>◀ Backward</button><button id="trackButton" class="primary" disabled>Track Both</button><button id="forwardButton" class="secondary" disabled>Forward ▶</button></div>
+      <button id="cancelButton" class="secondary wide" disabled hidden>■ Stop Tracking</button>
+      <div class="tracking-state"><progress id="progress" max="100" value="0" aria-label="Tiến độ Tracking"></progress><div id="status" role="status" aria-live="polite">Chọn video trên Timeline → Use Selected Clip.</div><div class="tracking-meta"><span id="roiLabel">Khoanh vùng trong Preview</span><span id="confidence">X / Y</span></div></div>
+      <button id="reviewButton" class="text-button" hidden>Xem Frame cần kiểm tra lại</button>
+      <div class="target-toolbar"><span>Target: <strong id="targetName">Chưa chọn Graphic</strong></span><button id="targetButton" class="secondary compact">Use Selected Graphic</button></div>
+      <div class="apply-actions"><button id="removeButton" class="secondary" disabled>Remove Tracking</button><button id="applyButton" class="primary" disabled>Apply</button></div>
+      <p id="applyHelp" class="hint">Track trước khi Apply.</p>
     </section>
-    <details class="advanced-group"><summary>Advanced &amp; Updates</summary>
-    <details><summary>Cài đặt nâng cao</summary><div class="grid two"><label>Smoothing<select id="smooth"><option value="0">Tắt · bám sát chuyển động</option><option value="2">Nhẹ · 5 Frame</option><option value="4">Vừa · 9 Frame</option></select></label><label>Motion Gain<input id="gain" type="number" min="0.01" max="10" step="0.05" value="1"></label></div><button id="exportButton" class="text-button" disabled>Xuất dữ liệu JSON</button><label>Đường dẫn Python<input id="python" type="text" placeholder="Tự động tìm Python đã cài OpenCV" spellcheck="false"></label><button id="checkButton" class="secondary">Kiểm tra bộ xử lý</button><p class="hint">Video được xử lý trên máy. Hỗ trợ video có tốc độ Frame cố định, pixel vuông và tốc độ phát 100%. Nếu đã đổi tốc độ, dùng Warp Stabilizer hoặc Scale to Frame Size, hãy xuất đoạn đó thành video trước.</p><p class="hint">Các checkbox Position / Scale / Rotation hỗ trợ Uniform Scale và xoay 2D quanh Anchor Point của Graphic, giữ khoảng cách Position ban đầu với điểm Tracking. Chưa hỗ trợ Perspective hoặc vật thể bị che khuất. Video nguồn cần Scale X/Y bằng nhau; Bật Scale cần Graphic có Uniform Scale. Các thuộc tính được chọn phải chưa có Animation.</p></details>
+    <details><summary>Advanced</summary><div class="grid two"><label>Smoothing<select id="smooth"><option value="0">Tắt · bám sát chuyển động</option><option value="2">Nhẹ · 5 Frame</option><option value="4">Vừa · 9 Frame</option></select></label><label>Motion Gain<input id="gain" type="number" min="0.01" max="10" step="0.05" value="1"></label></div><button id="exportButton" class="text-button" disabled>Xuất dữ liệu JSON</button><label>Đường dẫn Python<input id="python" type="text" placeholder="Tự động tìm Python đã cài OpenCV" spellcheck="false"></label><button id="checkButton" class="secondary">Kiểm tra bộ xử lý</button><p class="hint">Video được xử lý trên máy. Hỗ trợ video có tốc độ Frame cố định, pixel vuông và tốc độ phát 100%. Nếu đã đổi tốc độ, dùng Warp Stabilizer hoặc Scale to Frame Size, hãy xuất đoạn đó thành video trước.</p><p class="hint">Các checkbox Position / Scale / Rotation hỗ trợ Uniform Scale và xoay 2D quanh Anchor Point của Graphic, giữ khoảng cách Position ban đầu với điểm Tracking. Chưa hỗ trợ Perspective hoặc vật thể bị che khuất. Video nguồn cần Scale X/Y bằng nhau; Bật Scale cần Graphic có Uniform Scale. Các thuộc tính được chọn phải chưa có Animation.</p></details>
     <details id="updatesPanel"><summary>Updates</summary><label>GitHub Repository<input id="updateRepo" type="text" placeholder="owner/pr-track-2d" spellcheck="false"></label><label class="update-toggle"><input id="autoUpdates" type="checkbox" checked> Check for Updates khi mở panel</label><button id="checkUpdates" class="secondary">Check for Updates</button><p id="updateStatus" class="hint" role="status">Nhập repo public rồi bấm Check for Updates. Không cần GitHub token.</p><button id="downloadUpdate" class="primary wide" hidden>Mở Release để tải bản mới</button></details>
-    <p class="hint">Track Both Directions chạy từ Frame mốc về đầu và cuối clip. Đổi Playhead thì bấm Update Frame và khoanh lại. Frame Estimated hiện màu vàng, có thể trượt khỏi vật thể. Stop hủy lượt Tracking đang chạy. Reset Tracking khôi phục lần Apply gần nhất trong phiên.</p>
-    </details>
+    <p class="hint">Track Both chạy từ Frame mốc về đầu và cuối clip. Đổi Playhead thì bấm Update Frame và khoanh lại. Frame Estimated hiện màu vàng, có thể trượt khỏi vật thể. Stop hủy lượt Tracking đang chạy. Remove Tracking khôi phục lần Apply gần nhất trong phiên, giữ dữ liệu Track.</p>
   </main>
   <footer><span>BÁM CHUYỂN ĐỘNG 2D</span><span>Windows / Premiere 26</span></footer>
   <script src="js/mapping.js"></script><script src="js/bridge.js"></script><script src="js/panel.js"></script><script src="js/updates.js"></script>

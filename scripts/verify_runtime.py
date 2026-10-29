@@ -82,6 +82,11 @@ with tempfile.TemporaryDirectory(prefix='PR Track tiếng Việt ') as folder:
     for i,point in enumerate(both['points']):
         source_index=int((0.2+i/24)*30+1e-7)
         assert abs(point['x']-(124+2*(source_index-21)))<1
+    for direction,expected in [('forward',12),('backward',13)]:
+        directional=request({'command':'track','path':str(video),'start':0.2,'duration':1,'fps':24,'seedOffset':0.5,'roi':[96,95,56,56],'direction':direction})[-1]['result']
+        assert directional['complete'] and len(directional['points'])==expected
+        assert directional['direction']==direction
+    print('PASS: standalone Backward/Forward slicing and timelines.')
     print('PASS: standalone bidirectional tracking from middle seed, trimmed input and mixed FPS.')
     print('PASS: standalone continues to final frame after subject disappears; Estimated frames flagged.')
     print('PASS: standalone ORB recovery from 30-degree rotation and 20-percent scale jump.')

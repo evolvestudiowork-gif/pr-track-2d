@@ -176,7 +176,7 @@ var PRTrack = (function () {
         fail(message);
     }
     return {
-        version: '0.5.0',
+        version: '0.5.1',
         source: function () { return guard(function () { var s = sequence(); return sourceInfo(selectedVideo(s), s); }); },
         range: function (request) { return guard(function () {
             var s = sequence(), clip = findClip(s, request.source.nodeId);
@@ -190,14 +190,18 @@ var PRTrack = (function () {
             if (frames>1000000) fail('Đoạn Tracking vượt giới hạn 1.000.000 Frame. Hãy chia clip ngắn hơn.');
             return {startOffset:0, seedOffset:offset, duration:frames/info.fps};
         }); },
-        target: function (request) { return guard(function () { var s = sequence(); return targetInfo(selectedVideo(s), s, request && request.channels); }); },
+        target: function (request) { return guard(function () {
+            var s = sequence();
+            if (request && request.sequenceId && request.sequenceId !== String(s.sequenceID)) fail('Target thuộc Sequence khác. Hãy Use Selected Graphic lại.');
+            return targetInfo(request && request.nodeId ? findClip(s, request.nodeId) : selectedVideo(s), s, request && request.channels);
+        }); },
         begin: function (request) { return guard(function () {
             if (active) fail('Đang ghi keyframe. Vui lòng chờ hoàn tất.');
             var s = sequence(), source = findClip(s, request.source.nodeId);
             if (json(sourceInfo(source, s)) !== json(request.source)) fail('Video nguồn hoặc sequence đã thay đổi. Hãy lấy video và bám lại.');
             var selected = request.channels || {position:true, scale:!!request.transform, rotation:!!request.transform};
             if (!selected.position && !selected.scale && !selected.rotation) fail('Chọn ít nhất một Tracking Channel.');
-            var clip = selectedVideo(s), target = targetInfo(clip, s, selected);
+            var clip = findClip(s, request.target.nodeId), target = targetInfo(clip, s, selected);
             if (target.nodeId === request.source.nodeId) fail('Hãy chọn lớp chữ cần gắn chuyển động, thay vì video nguồn.');
             if (json(target) !== json(request.target)) fail('Lớp chữ đã thay đổi. Hãy bấm Áp dụng lại.');
             if (!numeric(request.count) || request.count < 2 || request.count > 1000000 || request.count % 1) fail('Số lượng keyframe không hợp lệ.');

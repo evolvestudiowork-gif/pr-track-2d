@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 
-test('Track Forward swaps with Stop while tracking and resets after cancellation',async()=>{
+test('direction controls swap with Stop while tracking and reset after cancellation',async()=>{
   const html=fs.readFileSync(path.join(__dirname,'../extension/index.html'),'utf8');
   const elements={};
   for(const match of html.matchAll(/\bid="([^"]+)"/g)) elements[match[1]]={
@@ -41,13 +41,13 @@ test('Track Forward swaps with Stop while tracking and resets after cancellation
   await new Promise(setImmediate);
   assert.equal(requests[1].start,0);
   assert.equal(requests[1].seedOffset,0.5);
-  assert.equal(elements.trackButton.hidden,true);
+  assert.equal(elements.trackDirections.hidden,true);
   assert.equal(elements.cancelButton.hidden,false);
   assert.equal(elements.cancelButton.disabled,false);
   elements.cancelButton.events.click();
   assert.equal(elements.cancelButton.disabled,true);
   await new Promise(setImmediate);
   assert.equal(cancelled,1);
-  assert.equal(elements.trackButton.hidden,false);
+  assert.equal(elements.trackDirections.hidden,false);
   assert.equal(elements.cancelButton.hidden,true);
 });

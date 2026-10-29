@@ -340,3 +340,20 @@ test('short graphic overlap maps through real host transaction and Reset', () =>
   assert.equal(h.call('remove').ok,true);
   assert.equal(h.run('Object.keys(pos.keys).length'),0);
 });
+
+
+test('stored target is refreshed and applied by ID even when source is selected',()=>{
+ const h=setup();h.run('selected=src');
+ const target=h.call('target',{nodeId:h.target.nodeId,sequenceId:h.target.sequenceId,channels:{position:true}});
+ assert.equal(target.ok,true);assert.equal(target.data.nodeId,'graphic');
+ assert.equal(h.call('begin',{source:h.source,target:target.data,count:2}).ok,true);
+ assert.equal(h.call('chunk',[{time:3,value:[0.5,0.5]},{time:4,value:[0.6,0.55]}]).ok,true);
+ assert.equal(h.call('finish').ok,true);
+ assert.equal(h.call('remove').ok,true);
+});
+test('stored target rejects another sequence or deleted clip',()=>{
+ const h=setup();
+ assert.equal(h.call('target',{nodeId:h.target.nodeId,sequenceId:'different'}).ok,false);
+ assert.equal(h.call('target',{nodeId:'deleted',sequenceId:h.target.sequenceId}).ok,false);
+ assert.equal(h.run('pos.varying'),false);
+});

@@ -14,7 +14,7 @@
     // Premiere can retain the old ExtendScript namespace after a panel is reopened.
     // Load this installed version once; leave an up-to-date namespace/session intact.
     var hostPath = JSON.stringify(root.replace(/\\/g, '/') + '/jsx/host.jsx');
-    var script = '(function(){if(typeof PRTrack === "undefined" || PRTrack.version !== "0.5.0"){' +
+    var script = '(function(){if(typeof PRTrack === "undefined" || PRTrack.version !== "0.5.1"){' +
       '$.evalFile(new File(' + hostPath + '));}return PRTrack.' + method + '(' + payload + ');}())';
     return new Promise(function (resolve, reject) {
       // No timeout for mutations: reporting a timeout while Premiere still writes
