@@ -8,7 +8,7 @@ Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows và ma
 
 Source → Preview → Channels → Track → Target → Apply. Chọn riêng Backward / Track Both / Forward; Use Selected Graphic giữ đích Apply theo ID dù đổi selection trên Timeline. Remove Tracking khôi phục lần Apply gần nhất, giữ dữ liệu Track. Apply hiện rõ lý do khi chưa sẵn sàng; Advanced và Updates tách riêng.
 
-Reset All dọn Source, Target, vùng chọn và kết quả Track để bắt đầu lại, đồng thời đưa Channels, Smoothing và Motion Gain về mặc định. Keyframe đã Apply trên Timeline được giữ nguyên.
+Reset Tracking xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc để khoanh lại. Source, Target, Channels, Smoothing, Motion Gain và Keyframe trên Timeline được giữ nguyên.
 
 ## Tính năng
 
@@ -17,7 +17,7 @@ Reset All dọn Source, Target, vùng chọn và kết quả Track để bắt �
 - **Apply linh hoạt:** Graphic không cần dài bằng video; chỉ áp dụng vào phần giao với dữ liệu Tracking, tối thiểu 2 Frame.
 - **Continue Tracking:** khi mất bám, tiếp tục bằng dữ liệu dự đoán, đánh dấu **Estimated** và hiển thị vùng chọn màu vàng.
 - **Remove Tracking:** khôi phục các thuộc tính của lần Apply gần nhất trong phiên làm việc.
-- **Reset All:** xóa Source, Target, vùng chọn, Preview và kết quả Track để bắt đầu lại; đưa Channels, Smoothing và Motion Gain về mặc định.
+- **Reset Tracking:** xóa vùng chọn và kết quả Track, trở về Frame mốc; giữ Source, Target và các thiết lập để khoanh lại ngay.
 - **Preview:** xem vùng Tracking, tiến độ, Confidence và kết quả bằng thanh trượt.
 - **Advanced:** Smoothing, Motion Gain và xuất dữ liệu JSON.
 - **GitHub Updates:** tự kiểm tra Release mới khi mở panel.
@@ -94,11 +94,11 @@ Bấm **Remove Tracking** để gỡ các Keyframe của lần Apply gần nhấ
 
 Remove Tracking chỉ nhớ lần Apply gần nhất trong phiên hiện tại. Nếu các Keyframe đó đã được chỉnh sửa thủ công, plugin sẽ từ chối tự gỡ để bảo vệ thay đổi.
 
-### 5. Reset All khi cần Track lại
+### 5. Reset Tracking khi cần Track lại
 
-Bấm **Reset All** để dọn dữ liệu trong panel rồi chọn Source và khoanh vùng lại. Nếu đang Tracking, bấm **Stop** trước khi Reset.
+Bấm **Reset Tracking** để xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc rồi khoanh lại ngay trên Source đang dùng. Không cần chọn lại video. Nếu đang Tracking, bấm **Stop** trước khi Reset.
 
-Reset All giữ nguyên Keyframe đã Apply trên Timeline và vẫn giữ khả năng **Remove Tracking** cho lần Apply gần nhất. Cấu hình Python và Updates được giữ nguyên.
+Reset Tracking giữ nguyên Source, Target, Channels, Smoothing, Motion Gain và Keyframe đã Apply trên Timeline; vẫn có thể **Remove Tracking** cho lần Apply gần nhất. Cấu hình Python và Updates được giữ nguyên.
 
 ## Kiểm tra cập nhật
 

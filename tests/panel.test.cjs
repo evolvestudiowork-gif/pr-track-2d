@@ -30,6 +30,7 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extension/js/panel.js'),'utf8'),context);
   assert.equal(elements.cancelButton.hidden,true);
+  assert.equal(elements.resetButton.disabled,true);
   elements.sourceButton.events.click();
   await new Promise(setImmediate);
   canvas.events.pointerdown({button:0,clientX:30,clientY:30,pointerId:1});
@@ -57,24 +58,24 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   const requestCount=requests.length;
   elements.trackScale.checked=true;
   elements.smooth.value='4'; elements.gain.value='2';
-  elements.resetButton.events.click();
-  assert.equal(elements.clipName.textContent,'Source: Chưa chọn clip');
+  await elements.resetButton.events.click();
+  assert.equal(elements.clipName.textContent,'clip');
   assert.equal(elements.targetName.textContent,'Chưa chọn Graphic');
-  assert.equal(elements.emptyPreview.hidden,false);
+  assert.equal(elements.emptyPreview.hidden,true);
   assert.equal(elements.sourceStatus.hidden,true);
-  assert.equal(elements.previewButton.disabled,true);
+  assert.equal(elements.previewButton.disabled,false);
   assert.equal(elements.trackButton.disabled,true);
   assert.equal(elements.applyButton.disabled,true);
   assert.equal(elements.exportButton.disabled,true);
   assert.equal(elements.scrub.max,0);
   assert.equal(elements.trackPosition.checked,true);
-  assert.equal(elements.trackScale.checked,false);
-  assert.equal(elements.smooth.value,'0');
-  assert.equal(elements.gain.value,'1');
-  assert.equal(requests.length,requestCount);
-  // A fresh Source can be selected after resetting a failed/cancelled track.
-  elements.sourceButton.events.click();
-  await new Promise(setImmediate);
+  assert.equal(elements.trackScale.checked,true);
+  assert.equal(elements.smooth.value,'4');
+  assert.equal(elements.gain.value,'2');
+  assert.equal(requests.length,requestCount+1);
+  assert.equal(requests.at(-1).time,0.5,'Reset returns to original reference frame');
+  assert.equal(hostCalls.filter(m=>m==='source').length,1,'Source is not selected again');
+  // The existing Source can immediately be reselected on the canvas and tracked.
   assert.equal(elements.previewButton.disabled,false);
   assert.equal(elements.emptyPreview.hidden,true);
   canvas.events.pointerdown({button:0,clientX:30,clientY:30,pointerId:1});
@@ -87,8 +88,12 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   assert.equal(elements.removeButton.disabled,false);
   assert.ok(hostCalls.includes('finish'));
   const hostCount=hostCalls.length;
-  elements.resetButton.events.click();
+  await elements.resetButton.events.click();
   assert.equal(hostCalls.length,hostCount,'Reset must not mutate Timeline');
+  assert.equal(elements.clipName.textContent,'clip');
+  assert.equal(elements.targetName.textContent,'Graphic');
+  assert.equal(elements.applyButton.disabled,true);
+  assert.equal(elements.exportButton.disabled,true);
   assert.equal(elements.removeButton.disabled,false,'Keep ability to remove last Apply');
   elements.removeButton.events.click(); await new Promise(setImmediate);
   assert.equal(hostCalls.at(-1),'remove');

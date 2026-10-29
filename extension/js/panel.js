@@ -35,7 +35,7 @@
     $('applyHelp').textContent = busy ? 'Chờ tác vụ hoàn tất hoặc bấm Stop khi đang Track.' : !state.result ? 'Track trước khi Apply.' : !state.result.complete ? 'Track chưa hoàn tất. Update Frame để Track lại.' : !any ? 'Chọn ít nhất một Channel.' : !state.target ? 'Chọn Graphic trên Timeline → Use Selected Graphic.' : state.appliedTargetId === state.target.nodeId ? 'Remove Tracking để khôi phục Graphic trước khi Apply lại.' : 'Sẵn sàng Apply vào '+state.target.name+'.';
     $('exportButton').disabled = busy || !state.result;
     $('removeButton').disabled = busy || !state.canRemove;
-    $('resetButton').disabled = busy;
+    $('resetButton').disabled = busy || !state.source;
     $('scrub').disabled = busy || !state.result;
     ['trackPosition', 'trackScale', 'trackRotation', 'smooth', 'gain', 'python', 'checkButton'].forEach(function (id) { $(id).disabled = busy; });
   }
@@ -52,23 +52,25 @@
     $('confidence').textContent = 'X / Y'; $('progress').value = 0;
   }
   $('resetButton').addEventListener('click', function () {
-    if (state.busy) return;
+    if (state.busy || !state.source) return;
+    return run('reset', async function () {
     clearTimeout(scrubTimer); scrubTimer = null;
     imageVersion++; drag = null;
     clearResult();
-    state.source = null; state.target = null; state.metadata = null; state.image = null;
-    state.roi = null; state.ready = false; state.seedOffset = 0; state.duration = 0; state.cancelled = false;
+    state.roi = null; state.ready = false; state.cancelled = false;
     // Keep the last Apply record so Remove Tracking can still restore Timeline keyframes.
-    $('trackPosition').checked = true; $('trackScale').checked = false; $('trackRotation').checked = false;
-    $('smooth').value = '0'; $('gain').value = '1';
-    canvas.width = 960; canvas.height = 540; ctx.clearRect(0, 0, canvas.width, canvas.height);
-    $('emptyPreview').hidden = false;
-    $('clipName').textContent = 'Source: Chưa chọn clip';
-    $('clipMeta').textContent = 'Đặt Playhead trong video rồi chọn Source.';
     $('sourceStatus').hidden = true; $('sourceStatus').textContent = '';
-    $('frameLabel').textContent = 'SOURCE'; $('roiLabel').textContent = 'Khoanh vùng trong Preview';
-    status('Đã Reset All. Chọn video trên Timeline → Use Selected Clip.');
-    controls();
+    $('roiLabel').textContent = 'Khoanh vùng trong Preview';
+    draw(); status('Đang Reset Tracking…');
+    // Return to the original reference frame, even if Timeline selection or Playhead changed.
+    var response = await bridge.engine({command: 'preview', path: state.source.path,
+      time: state.source.inPoint + state.seedOffset}, $('python').value);
+    state.metadata = response.metadata;
+    await showImage(response.image);
+    state.ready = true;
+    $('frameLabel').textContent = 'FRAME ' + response.frame + ' · SOURCE';
+    status('Đã Reset Tracking. Khoanh vùng trên Source hiện tại để Track lại.');
+    });
   });
   function pointToCanvas(x, y) {
     return [x / state.metadata.width * canvas.width, y / state.metadata.height * canvas.height];
