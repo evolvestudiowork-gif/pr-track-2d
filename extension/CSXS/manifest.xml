@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="vn.prtrack" ExtensionBundleVersion="0.5.1" ExtensionBundleName="PR Track 2D">
-  <ExtensionList><Extension Id="vn.prtrack.panel" Version="0.5.1"/></ExtensionList>
+<ExtensionManifest Version="7.0" ExtensionBundleId="vn.prtrack" ExtensionBundleVersion="0.5.2" ExtensionBundleName="PR Track 2D">
+  <ExtensionList><Extension Id="vn.prtrack.panel" Version="0.5.2"/></ExtensionList>
   <ExecutionEnvironment>
     <HostList><Host Name="PPRO" Version="[26.0,26.9]"/></HostList>
     <LocaleList><Locale Code="All"/></LocaleList>

@@ -1,0 +1,21 @@
+PR TRACK 2D 0.5.1 — PREMIERE PRO 2026 / WINDOWS
+
+1. Giải nén TOÀN BỘ ZIP, đóng Premiere, chạy Install-PRTrack.cmd.
+2. Mở Window > Extensions > PR Track 2D.
+3. Chọn clip nguyên hoặc đã cắt, đặt Playhead tại Frame mốc bất kỳ trong clip.
+4. Use Selected Clip, khoanh vùng và chọn Position / Scale / Rotation.
+5. Chọn Backward, Track Both hoặc Forward. Track Both tự Track từ mốc về đầu và cuối phần clip trên Timeline.
+6. Xem lại kết quả, chọn Graphic trên Timeline > Use Selected Graphic > Apply.
+
+Nếu Graphic phủ Frame mốc: đặt chữ tại Frame mốc trước Apply.
+Nếu Graphic không phủ mốc: đặt chữ tại Frame đầu phần giao trước Apply.
+Mất bám vẫn tiếp tục bằng Estimated (màu vàng); cần xem lại vì có thể trượt.
+Stop hủy lượt đang chạy. Remove Tracking khôi phục lần Apply gần nhất trong phiên.
+Đổi Playhead thì bấm Update Frame và khoanh lại.
+
+Không cần Python/OpenCV. Không tách EXE khỏi thư mục runtime.
+Gói beta CEP chưa ký số; máy mới cần cho phép extension CEP phát triển.
+Bộ cài không tự đổi registry. Tính năng mới chưa xác nhận trực tiếp trong Premiere.
+
+Updates: nhập evolvestudiowork-gif/pr-track-2d rồi Check for Updates.
+Xem README.md và GITHUB-RELEASES.md để biết chi tiết.

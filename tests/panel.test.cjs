@@ -17,13 +17,13 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   canvas.getContext=()=>new Proxy({}, {get:()=>()=>{}});
   canvas.getBoundingClientRect=()=>({left:0,top:0,width:400,height:240});
   canvas.setPointerCapture=()=>{};
-  let rejectTrack,cancelled=0; const requests=[];
+  let rejectTrack,resolveTrack,cancelled=0; const requests=[],hostCalls=[];
   const bridge={available:true,hasBundledEngine:()=>true,configuredPython:()=>'',
-    call:async method=>method==='source'?{name:'clip',path:'clip.mov',inPoint:0,fps:30}: {startOffset:0,seedOffset:0.5,duration:1},
-    engine:async request=>(requests.push(request),request.command==='preview'?{metadata:{width:400,height:240,fps:30},frame:0,image:'mock'}:new Promise((resolve,reject)=>{rejectTrack=reject;})),
+    call:async method=>{hostCalls.push(method);return method==='source'?{name:'clip',nodeId:'source',sequenceId:'seq',path:'clip.mov',inPoint:0,fps:30}:method==='target'?{name:'Graphic',nodeId:'graphic',sequenceId:'seq'}:method==='finish'?{written:2,name:'Graphic'}:{startOffset:0,seedOffset:0.5,duration:1};},
+    engine:async request=>(requests.push(request),request.command==='preview'?{metadata:{width:400,height:240,fps:30},frame:0,image:'mock'}:new Promise((resolve,reject)=>{resolveTrack=resolve;rejectTrack=reject;})),
     cancel(){cancelled++;rejectTrack(new Error('Stopped'));}
   };
-  const context={window:{TrackBridge:bridge,TrackMapping:{}},document:{getElementById:id=>{
+  const context={window:{TrackBridge:bridge,TrackMapping:{createKeys:()=>[{},{}]}},document:{getElementById:id=>{
     assert.ok(elements[id],id);return elements[id];
   }},localStorage:{getItem:()=>null},setTimeout,clearTimeout,
     Image:class{constructor(){this.naturalWidth=400;this.naturalHeight=240;}set src(value){queueMicrotask(()=>this.onload());}}
@@ -44,10 +44,53 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   assert.equal(elements.trackDirections.hidden,true);
   assert.equal(elements.cancelButton.hidden,false);
   assert.equal(elements.cancelButton.disabled,false);
+  assert.equal(elements.resetButton.disabled,true);
+  elements.resetButton.events.click();
+  assert.equal(elements.trackDirections.hidden,true);
   elements.cancelButton.events.click();
   assert.equal(elements.cancelButton.disabled,true);
   await new Promise(setImmediate);
   assert.equal(cancelled,1);
   assert.equal(elements.trackDirections.hidden,false);
   assert.equal(elements.cancelButton.hidden,true);
+  assert.equal(elements.resetButton.disabled,false);
+  const requestCount=requests.length;
+  elements.trackScale.checked=true;
+  elements.smooth.value='4'; elements.gain.value='2';
+  elements.resetButton.events.click();
+  assert.equal(elements.clipName.textContent,'Source: Chưa chọn clip');
+  assert.equal(elements.targetName.textContent,'Chưa chọn Graphic');
+  assert.equal(elements.emptyPreview.hidden,false);
+  assert.equal(elements.sourceStatus.hidden,true);
+  assert.equal(elements.previewButton.disabled,true);
+  assert.equal(elements.trackButton.disabled,true);
+  assert.equal(elements.applyButton.disabled,true);
+  assert.equal(elements.exportButton.disabled,true);
+  assert.equal(elements.scrub.max,0);
+  assert.equal(elements.trackPosition.checked,true);
+  assert.equal(elements.trackScale.checked,false);
+  assert.equal(elements.smooth.value,'0');
+  assert.equal(elements.gain.value,'1');
+  assert.equal(requests.length,requestCount);
+  // A fresh Source can be selected after resetting a failed/cancelled track.
+  elements.sourceButton.events.click();
+  await new Promise(setImmediate);
+  assert.equal(elements.previewButton.disabled,false);
+  assert.equal(elements.emptyPreview.hidden,true);
+  canvas.events.pointerdown({button:0,clientX:30,clientY:30,pointerId:1});
+  canvas.events.pointermove({clientX:100,clientY:100}); canvas.events.pointerup();
+  elements.trackButton.events.click(); await new Promise(setImmediate);
+  resolveTrack({complete:true,points:[{t:0,x:50,y:50},{t:1/30,x:51,y:51}],image:'mock'});
+  await new Promise(setImmediate);
+  elements.targetButton.events.click(); await new Promise(setImmediate);
+  elements.applyButton.events.click(); await new Promise(setImmediate);
+  assert.equal(elements.removeButton.disabled,false);
+  assert.ok(hostCalls.includes('finish'));
+  const hostCount=hostCalls.length;
+  elements.resetButton.events.click();
+  assert.equal(hostCalls.length,hostCount,'Reset must not mutate Timeline');
+  assert.equal(elements.removeButton.disabled,false,'Keep ability to remove last Apply');
+  elements.removeButton.events.click(); await new Promise(setImmediate);
+  assert.equal(hostCalls.at(-1),'remove');
+  assert.equal(elements.removeButton.disabled,true);
 });

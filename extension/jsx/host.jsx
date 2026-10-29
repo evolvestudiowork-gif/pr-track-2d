@@ -176,7 +176,7 @@ var PRTrack = (function () {
         fail(message);
     }
     return {
-        version: '0.5.1',
+        version: '0.5.2',
         source: function () { return guard(function () { var s = sequence(); return sourceInfo(selectedVideo(s), s); }); },
         range: function (request) { return guard(function () {
             var s = sequence(), clip = findClip(s, request.source.nodeId);

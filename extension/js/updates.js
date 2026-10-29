@@ -1,6 +1,6 @@
 (function (root) {
   'use strict';
-  var VERSION = '0.5.1';
+  var VERSION = '0.5.2';
   function repository(value) {
     var repo = String(value || '').trim().replace(/^https:\/\/github\.com\//i, '').replace(/\/$/, '').replace(/\.git$/, '');
     if (!/^[A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9_.-]+$/.test(repo) || /\/\.{1,2}$/.test(repo)) throw new Error('Nhập Repository dạng owner/repo hoặc link GitHub public.');

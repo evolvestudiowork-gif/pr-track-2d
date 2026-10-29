@@ -469,7 +469,7 @@ def run_bidirectional(request, progress=lambda event: None):
                 except (ValueError,cv2.error) as error:
                     return dict(complete=False,reason=str(error),points=[p for p in points if p is not None],
                                 expected=count,metadata=video.metadata(),image=jpeg(sample_frame),
-                                failure=dict(kind='video_read_error',sourceFrame=current_source,engine='0.5.1'))
+                                failure=dict(kind='video_read_error',sourceFrame=current_source,engine='0.5.2'))
                 if current_source == source_indices[seed]:
                     frame = seed_frame
                 elif wanted in cache and direction < 0:
@@ -532,7 +532,7 @@ def run_track(request, progress=lambda event: None):
                     frame = video.next()
                 except ValueError as exc:
                     return dict(complete=False, reason=str(exc), methods=tracker.methods,
-                                failure=dict(kind='video_read_error',sourceFrame=video.index,engine='0.5.1'),
+                                failure=dict(kind='video_read_error',sourceFrame=video.index,engine='0.5.2'),
                                 points=points, expected=count, metadata=video.metadata(), image=jpeg(sample_frame))
                 before = np.array(tracker.center())
                 was_estimated = estimated
@@ -563,7 +563,7 @@ def run_track(request, progress=lambda event: None):
 def handle(request):
     command = request.get("command")
     if command == "check":
-        return dict(python=sys.version.split()[0], opencv=cv2.__version__, executable=sys.executable, engine='0.5.1', tracking='LK + adaptive template/ECC + ORB')
+        return dict(python=sys.version.split()[0], opencv=cv2.__version__, executable=sys.executable, engine='0.5.2', tracking='LK + adaptive template/ECC + ORB')
     if command == "preview":
         video = Video(request.get("path"))
         try:
