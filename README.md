@@ -14,11 +14,11 @@ Source → Preview → Channels → Track → Target → Apply. Chọn riêng Ba
 - **Position / Scale / Rotation:** chọn riêng hoặc kết hợp bằng checkbox.
 - **Apply linh hoạt:** Graphic không cần dài bằng video; chỉ áp dụng vào phần giao với dữ liệu Tracking, tối thiểu 2 Frame.
 - **Continue Tracking:** khi mất bám, tiếp tục bằng dữ liệu dự đoán, đánh dấu **Estimated** và hiển thị vùng chọn màu vàng.
-- **Reset Tracking:** khôi phục các thuộc tính của lần Apply gần nhất trong phiên làm việc.
+- **Remove Tracking:** khôi phục các thuộc tính của lần Apply gần nhất trong phiên làm việc.
 - **Preview:** xem vùng Tracking, tiến độ, Confidence và kết quả bằng thanh trượt.
 - **Advanced:** Smoothing, Motion Gain và xuất dữ liệu JSON.
 - **GitHub Updates:** tự kiểm tra Release mới khi mở panel.
-- **Runtime tích hợp:** không cần cài riêng Python, OpenCV hoặc NumPy. Video được xử lý trên máy.
+- **Runtime tích hợp:** có sẵn cho Windows, Mac Apple Silicon và Mac Intel; không cần cài riêng Python, OpenCV hoặc NumPy. Video được xử lý trên máy.
 
 ## Yêu cầu
 
@@ -45,14 +45,14 @@ Không chạy bộ cài ngay bên trong ZIP và không tách file EXE khỏi th�
 
 ### macOS
 
-Trong [Release v0.5.0](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.0), tải đúng gói:
+Trong [Latest Release](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest), tải đúng gói theo máy:
 
-- **Apple Silicon (M1/M2/M3/M4…):** `PR-Track-2D-0.5.0-macOS-arm64-Standalone.zip`.
-- **Intel:** `PR-Track-2D-0.5.0-macOS-x86_64-Standalone.zip`.
+- **Apple Silicon (M1/M2/M3/M4…):** `PR-Track-2D-<version>-macOS-arm64-Standalone.zip`.
+- **Intel:** `PR-Track-2D-<version>-macOS-x86_64-Standalone.zip`.
 
 Giải nén toàn bộ bằng Finder, đóng Premiere rồi mở **Install-PRTrack.command**. Không cần cài Python. CEP chạy qua Rosetta cần gói x86_64.
 
-Engine đã được build và kiểm thử native trên GitHub Actions, gồm Tracking hai chiều, Scale/Rotation và Estimated. Chưa kiểm tra tích hợp trong Premiere trên Mac thật. Bản beta chưa có Developer ID/notarization; macOS có thể chặn file tải từ Internet. Installer không gỡ quarantine hoặc tắt Gatekeeper, và không tự bật CEP development mode.
+Bản Mac chưa có Developer ID/notarization; macOS có thể chặn file tải từ Internet. Installer không gỡ quarantine hoặc tắt Gatekeeper, và không tự bật CEP development mode.
 
 ## Cách sử dụng
 
@@ -60,14 +60,14 @@ Engine đã được build và kiểm thử native trên GitHub Actions, gồm T
 
 - Chọn video trên Timeline. Có thể dùng nguyên clip hoặc cắt sẵn đoạn cần Track.
 - Đặt Playhead tại **bất kỳ Frame nào bên trong clip** có vật thể rõ.
-- Bấm **Get Selected Clip**.
+- Bấm **Use Selected Clip**.
 - Nếu đổi Playhead sau khi lấy Source, bấm **Update Frame** rồi khoanh lại vùng.
 
 ### 2. Tracking
 
 - Kéo chuột khoanh vùng có chi tiết rõ trong Preview; tránh lấy quá nhiều nền.
 - Chọn **Position**, **Scale**, **Rotation** hoặc kết hợp các thuộc tính cần dùng.
-- Bấm **Track Both Directions**.
+- Chọn **Backward**, **Track Both** hoặc **Forward**. Track Both phân tích theo cả hai chiều từ Frame mốc.
 
 Plugin phân tích từ Frame mốc đến cuối clip, rồi từ Frame mốc ngược về đầu clip. Kết quả được ghép theo đúng thứ tự Timeline và giới hạn trong phần clip đã cắt.
 
@@ -85,15 +85,15 @@ Graphic không cần dài bằng video. Phần giao với dữ liệu Tracking c
 
 Với Caption, chuyển sang Graphic trước khi Apply. Plugin di chuyển cả Graphic clip; các lớp bên trong cùng Graphic sẽ đi cùng nhau.
 
-### 4. Reset
+### 4. Remove Tracking
 
 Bấm **Remove Tracking** để gỡ các Keyframe của lần Apply gần nhất và khôi phục giá trị ban đầu của các thuộc tính đã áp dụng.
 
-Reset chỉ nhớ lần Apply gần nhất trong phiên hiện tại. Nếu các Keyframe đó đã được chỉnh sửa thủ công, plugin sẽ từ chối tự Reset để bảo vệ thay đổi.
+Remove Tracking chỉ nhớ lần Apply gần nhất trong phiên hiện tại. Nếu các Keyframe đó đã được chỉnh sửa thủ công, plugin sẽ từ chối tự gỡ để bảo vệ thay đổi.
 
 ## Kiểm tra cập nhật
 
-Trong **Advanced & Updates → Updates**, nhập Repository:
+Trong **Updates**, nhập Repository:
 
 ```text
 evolvestudiowork-gif/pr-track-2d
@@ -114,11 +114,14 @@ Tracking hoạt động offline; kết nối mạng chỉ cần khi kiểm tra h
 - **Estimated là dự đoán**, có thể trượt khỏi vật thể. Chạy hết clip không đồng nghĩa với bám chính xác toàn bộ clip.
 - Clip offline, lỗi giải mã hoặc lỗi engine vẫn có thể làm lượt phân tích dừng.
 
-## Bản 0.5.0
+## Trạng thái kiểm thử và phát hành
 
-Thêm Tracking hai chiều từ Frame mốc, xử lý clip đã cắt, ghép dữ liệu đúng Timeline và giữ giá trị Position/Scale/Rotation tại mốc khi Apply. Giải mã ngược theo cụm để hạn chế RAM.
+- Bản **v0.5.1** đã đạt **70 kiểm thử tự động** và kiểm tra engine standalone trên Windows, Mac Apple Silicon và Mac Intel.
+- Engine Mac được build và kiểm thử native qua GitHub Actions. Chưa xác nhận trực tiếp toàn bộ workflow và giao diện trong Premiere.
+- Các gói hiện là **beta CEP chưa ký số**; bản Mac chưa có Developer ID/notarization.
+- **Stop** hiện hủy lượt đang chạy, chưa giữ phần dừng giữa chừng để Apply.
 
-Đã đạt **65 kiểm thử tự động** và kiểm tra EXE độc lập. Tính năng hai chiều chưa được xác nhận trực tiếp trong Premiere tại thời điểm phát hành.
+Các yêu cầu cài đặt và giới hạn chung được duy trì trong README này. [Release notes](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) tập trung vào tính năng mới, thay đổi và lỗi đã sửa của từng bản.
 
 ## Báo lỗi
 
