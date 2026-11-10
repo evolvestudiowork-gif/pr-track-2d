@@ -42,10 +42,12 @@ for (const platform of ['win32', 'darwin'])
             }
           })[name]
       };
-      vm.runInNewContext(
-        fs.readFileSync(path.join(__dirname, '../extension/js/bridge.js'), 'utf8'),
-        context
-      );
+      vm.createContext(context);
+      for (const file of ['messages', 'bridge'])
+        vm.runInContext(
+          fs.readFileSync(path.join(__dirname, `../extension/js/${file}.js`), 'utf8'),
+          context
+        );
       assert.equal(context.window.TrackBridge.hasBundledEngine(), true);
       const result = await context.window.TrackBridge.engine(
         { command: 'check' },

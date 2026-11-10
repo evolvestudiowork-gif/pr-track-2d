@@ -6,7 +6,7 @@ $source = Join-Path $packageRoot 'extension'
 if (-not (Test-Path -LiteralPath (Join-Path $source 'CSXS\manifest.xml'))) {
     throw 'Khong tim thay extension. Hay giai nen day du goi PR Track truoc khi cai.'
 }
-Write-Host 'PR Track 2D - Premiere Pro 2026 / Windows' -ForegroundColor Green
+Write-Host 'PR Track 2D - Premiere Pro 2026-2027 / Windows' -ForegroundColor Green
 $bundledEngine = Join-Path $source 'runtime\PRTrackEngine.exe'
 $resolvedPython = $null
 if (Test-Path -LiteralPath $bundledEngine) {

@@ -1,6 +1,7 @@
 (function (root) {
   'use strict';
   var VERSION = '0.5.2';
+  var DEFAULT_REPO = 'evolvestudiowork-gif/pr-track-2d';
   function repository(value) {
     var repo = String(value || '')
       .trim()
@@ -114,7 +115,7 @@
       root.localStorage.setItem(key, value);
     } catch (e) {}
   }
-  repoInput.value = read('prtrack.updateRepo', '');
+  repoInput.value = read('prtrack.updateRepo', DEFAULT_REPO);
   auto.checked = read('prtrack.autoUpdates', 'true') === 'true';
   auto.addEventListener('change', function () {
     save('prtrack.autoUpdates', String(auto.checked));

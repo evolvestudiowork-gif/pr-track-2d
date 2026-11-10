@@ -57,7 +57,7 @@ var PRTrack = (function () {
   }
   function sequence() {
     var s = app.project.activeSequence;
-    if (!s) fail('Mở sequence và chọn một clip trên timeline.');
+    if (!s) fail('Mở một Sequence và chọn clip trên Timeline.');
     return s;
   }
   function selectedVideo(s) {
@@ -66,14 +66,49 @@ var PRTrack = (function () {
       i;
     for (i = 0; i < selection.length; i++)
       if (selection[i].mediaType === 'Video') clips.push(selection[i]);
-    if (clips.length !== 1) fail('Chọn đúng một video hoặc lớp chữ (graphic) trên timeline.');
+    if (clips.length !== 1) fail('Chọn đúng một video hoặc một Graphic trên Timeline.');
     return clips[0];
   }
   function motion(clip) {
     for (var i = 0; i < clip.components.numItems; i++) {
       if (clip.components[i].matchName === 'AE.ADBE Motion') return clip.components[i];
     }
-    fail('Clip không có Motion tương thích. Hãy chọn graphic hoặc clip lồng có Motion.');
+    fail('Clip không có Motion tương thích. Hãy chọn Graphic hoặc clip lồng có Motion.');
+  }
+  function isPoint(value) {
+    return !!value && value.length === 2 && numeric(value[0]) && numeric(value[1]);
+  }
+  /**
+   * Named Motion parameters. Premiere's DOM exposes them only by index, and
+   * displayName is localised, so the documented order is checked by the
+   * shape of each value instead of by name.
+   */
+  function motionParams(clip) {
+    var props = motion(clip).properties;
+    if (props.numItems < 6) fail('Không đọc được cấu trúc Motion của phiên bản Premiere này.');
+    var m = {
+      position: props[0],
+      scale: props[1],
+      scaleWidth: props[2],
+      uniformScale: props[3],
+      rotation: props[4],
+      anchorPoint: props[5]
+    };
+    var uniform = typeof m.uniformScale.getValue();
+    if (
+      !isPoint(m.position.getValue()) ||
+      !numeric(m.scale.getValue()) ||
+      !numeric(m.scaleWidth.getValue()) ||
+      (uniform !== 'boolean' && uniform !== 'number') ||
+      !numeric(m.rotation.getValue()) ||
+      !isPoint(m.anchorPoint.getValue())
+    )
+      fail('Không nhận ra cấu trúc Motion của phiên bản Premiere này.');
+    return m;
+  }
+  function anyVarying(params) {
+    for (var i = 0; i < params.length; i++) if (params[i].isTimeVarying()) return true;
+    return false;
   }
   function normalSpeed(clip) {
     if (Math.abs(clip.getSpeed() - 1) > 0.000001 || clip.isSpeedReversed())
@@ -83,12 +118,11 @@ var PRTrack = (function () {
         clip.outPoint.seconds - clip.inPoint.seconds - (clip.end.seconds - clip.start.seconds)
       ) > 0.05
     )
-      fail('Thời lượng nguồn và timeline không khớp. Hãy xuất clip về tốc độ 100%.');
+      fail('Thời lượng nguồn và Timeline không khớp. Hãy xuất clip về tốc độ 100%.');
   }
   function position(param) {
     var p = param.getValue();
-    if (!p || p.length !== 2 || !numeric(p[0]) || !numeric(p[1]))
-      fail('Position của clip không phải tọa độ 2D được hỗ trợ.');
+    if (!isPoint(p)) fail('Position của clip không phải tọa độ 2D được hỗ trợ.');
     return [p[0], p[1]];
   }
   function timing(clip, s) {
@@ -104,18 +138,16 @@ var PRTrack = (function () {
   function sourceInfo(clip, s) {
     normalSpeed(clip);
     if (!clip.projectItem || clip.projectItem.isSequence())
-      fail('Hãy chọn video gốc. Chưa hỗ trợ sequence lồng làm nguồn.');
+      fail('Hãy chọn video gốc. Chưa hỗ trợ Nested Sequence làm Source.');
     var path = clip.projectItem.getMediaPath();
     if (!path || !new File(path).exists)
       fail('Không tìm thấy video nguồn. Hãy kiểm tra liên kết tệp trong Premiere.');
-    var props = motion(clip).properties;
-    if (props.numItems < 6) fail('Không đọc được cấu trúc Motion của phiên bản Premiere này.');
-    for (var i = 0; i < 6; i++)
-      if (props[i].isTimeVarying())
-        fail('Motion của video nguồn đã có chuyển động. Hãy xuất thành video trước khi bám.');
-    var scaleY = props[1].getValue(),
-      scaleX = props[3].getValue() ? scaleY : props[2].getValue();
-    var rotation = props[4].getValue();
+    var m = motionParams(clip);
+    if (anyVarying([m.position, m.scale, m.scaleWidth, m.uniformScale, m.rotation, m.anchorPoint]))
+      fail('Motion của video nguồn đã có chuyển động. Hãy xuất thành video trước khi Track.');
+    var scaleY = m.scale.getValue(),
+      scaleX = m.uniformScale.getValue() ? scaleY : m.scaleWidth.getValue();
+    var rotation = m.rotation.getValue();
     if (!numeric(scaleX) || !numeric(scaleY) || !numeric(rotation) || scaleX <= 0 || scaleY <= 0)
       fail('Không đọc được Scale/Rotation của video.');
     var settings = s.getSettings();
@@ -135,35 +167,37 @@ var PRTrack = (function () {
       scaleX: scaleX,
       scaleY: scaleY,
       rotation: rotation,
-      position: position(props[0]),
-      anchor: props[5].getValue()
+      position: position(m.position),
+      anchor: m.anchorPoint.getValue()
     };
     if (!numeric(info.fps) || info.fps < 1 || info.width <= 0 || info.height <= 0)
-      fail('Không đọc được kích thước hoặc tốc độ khung hình của sequence.');
+      fail('Không đọc được kích thước hoặc frame rate của Sequence.');
     return info;
   }
   function targetInfo(clip, s, selected) {
     selected = selected || { position: true };
     normalSpeed(clip);
-    var p = motion(clip).properties[0];
-    if (!p.areKeyframesSupported()) fail('Position của clip này không hỗ trợ keyframe.');
+    var m = motionParams(clip);
+    var p = m.position;
+    if (!p.areKeyframesSupported()) fail('Position của clip này không hỗ trợ Keyframe.');
     if (selected.position && p.isTimeVarying())
       fail(
-        'Lớp chữ đã có keyframe Position. Hãy dùng bản sao chưa có keyframe hoặc gỡ chuyển động cũ.'
+        'Graphic đã có Keyframe Position. Hãy dùng bản sao chưa có Keyframe hoặc gỡ chuyển động cũ.'
       );
     var info = timing(clip, s);
     info.name = clip.name;
     info.position = position(p);
-    var props = motion(clip).properties;
-    info.scale = props[1].getValue();
-    info.rotation = props[4].getValue();
-    info.uniform = !!props[3].getValue();
-    info.transformAnimated =
-      props[1].isTimeVarying() ||
-      props[2].isTimeVarying() ||
-      props[3].isTimeVarying() ||
-      props[4].isTimeVarying() ||
-      props[5].isTimeVarying();
+    info.scale = m.scale.getValue();
+    info.rotation = m.rotation.getValue();
+    info.uniform = !!m.uniformScale.getValue();
+    // Not read by the panel: part of the snapshot begin() compares to detect edits before Apply.
+    info.transformAnimated = anyVarying([
+      m.scale,
+      m.scaleWidth,
+      m.uniformScale,
+      m.rotation,
+      m.anchorPoint
+    ]);
     return info;
   }
   function findClip(s, id) {
@@ -171,15 +205,15 @@ var PRTrack = (function () {
       var clips = s.videoTracks[t].clips;
       for (var c = 0; c < clips.numItems; c++) if (String(clips[c].nodeId) === id) return clips[c];
     }
-    fail('Clip đã bị xóa khỏi sequence.');
+    fail('Clip đã bị xóa khỏi Sequence.');
   }
   function checkSession(job) {
     var s = sequence();
     if (String(s.sequenceID) !== job.target.sequenceId)
-      fail('Sequence đã thay đổi trong lúc ghi keyframe.');
+      fail('Sequence đã thay đổi trong lúc ghi Keyframe.');
     var clip = findClip(s, job.target.nodeId);
     if (json(timing(clip, s)) !== json(job.timing))
-      fail('Lớp chữ đã bị cắt hoặc di chuyển. Không thể tiếp tục áp dụng.');
+      fail('Graphic đã bị cắt hoặc di chuyển. Không thể tiếp tục Apply.');
     return clip;
   }
   function checkCode(code, action) {
@@ -272,7 +306,7 @@ var PRTrack = (function () {
         var s = sequence(),
           clip = findClip(s, request.source.nodeId);
         if (json(sourceInfo(clip, s)) !== json(request.source))
-          fail('Video nguồn đã thay đổi. Hãy lấy video lại.');
+          fail('Video nguồn đã thay đổi. Hãy bấm Use Selected Clip lại.');
         var at = s.getPlayerPosition().seconds,
           info = request.source;
         if (!numeric(at) || at < info.start - 0.000001 || at >= info.end - 0.000001)
@@ -282,7 +316,7 @@ var PRTrack = (function () {
         offset = Math.min((frames - 1) / info.fps, offset);
         if (frames < 2) fail('Clip cần ít nhất 2 Frame.');
         if (frames > 1000000)
-          fail('Đoạn Tracking vượt giới hạn 1.000.000 Frame. Hãy chia clip ngắn hơn.');
+          fail('Đoạn cần Track vượt giới hạn 1.000.000 Frame. Hãy chia clip ngắn hơn.');
         return { startOffset: 0, seedOffset: offset, duration: frames / info.fps };
       });
     },
@@ -290,7 +324,7 @@ var PRTrack = (function () {
       return guard(function () {
         var s = sequence();
         if (request && request.sequenceId && request.sequenceId !== String(s.sequenceID))
-          fail('Target thuộc Sequence khác. Hãy Use Selected Graphic lại.');
+          fail('Target thuộc Sequence khác. Hãy bấm Use Selected Graphic lại.');
         return targetInfo(
           request && request.nodeId ? findClip(s, request.nodeId) : selectedVideo(s),
           s,
@@ -300,11 +334,11 @@ var PRTrack = (function () {
     },
     begin: function (request) {
       return guard(function () {
-        if (active) fail('Đang ghi keyframe. Vui lòng chờ hoàn tất.');
+        if (active) fail('Đang ghi Keyframe, hãy chờ hoàn tất.');
         var s = sequence(),
           source = findClip(s, request.source.nodeId);
         if (json(sourceInfo(source, s)) !== json(request.source))
-          fail('Video nguồn hoặc sequence đã thay đổi. Hãy lấy video và bám lại.');
+          fail('Video nguồn hoặc Sequence đã thay đổi. Hãy chọn lại Source và Track lại.');
         var selected = request.channels || {
           position: true,
           scale: !!request.transform,
@@ -315,49 +349,51 @@ var PRTrack = (function () {
         var clip = findClip(s, request.target.nodeId),
           target = targetInfo(clip, s, selected);
         if (target.nodeId === request.source.nodeId)
-          fail('Hãy chọn lớp chữ cần gắn chuyển động, thay vì video nguồn.');
-        if (json(target) !== json(request.target))
-          fail('Lớp chữ đã thay đổi. Hãy bấm Áp dụng lại.');
+          fail('Hãy chọn Graphic đích, không phải video Source.');
+        if (json(target) !== json(request.target)) fail('Graphic đã thay đổi. Hãy bấm Apply lại.');
         if (
           !numeric(request.count) ||
           request.count < 2 ||
           request.count > 1000000 ||
           request.count % 1
         )
-          fail('Số lượng keyframe không hợp lệ.');
-        var props = motion(clip).properties,
-          p = props[0];
+          fail('Số lượng Keyframe không hợp lệ.');
+        var m = motionParams(clip);
         var channels = [];
         if (selected.position)
-          channels.push({ param: p, original: target.position, field: 'value', name: 'Position' });
+          channels.push({
+            param: m.position,
+            original: target.position,
+            field: 'value',
+            name: 'Position'
+          });
         if (selected.scale || selected.rotation) {
           if (
             (selected.scale && !target.uniform) ||
-            (selected.scale &&
-              (props[1].isTimeVarying() || props[2].isTimeVarying() || props[3].isTimeVarying())) ||
-            (selected.rotation && props[4].isTimeVarying()) ||
+            (selected.scale && anyVarying([m.scale, m.scaleWidth, m.uniformScale])) ||
+            (selected.rotation && m.rotation.isTimeVarying()) ||
             !numeric(target.scale) ||
             target.scale <= 0 ||
             !numeric(target.rotation)
           )
             fail('Graphic cần Uniform Scale và chưa có Animation Scale/Rotation/Anchor Point.');
           if (Math.abs(request.source.motion.scaleX - request.source.motion.scaleY) > 0.000001)
-            fail('Video nguồn cần Uniform Scale để Tracking Scale/Rotation.');
+            fail('Video nguồn cần Uniform Scale để Track Scale/Rotation.');
           if (
-            (selected.scale && !props[1].areKeyframesSupported()) ||
-            (selected.rotation && !props[4].areKeyframesSupported())
+            (selected.scale && !m.scale.areKeyframesSupported()) ||
+            (selected.rotation && !m.rotation.areKeyframesSupported())
           )
             fail('Graphic không hỗ trợ Keyframe Scale/Rotation.');
           if (selected.scale)
             channels.push({
-              param: props[1],
+              param: m.scale,
               original: target.scale,
               field: 'scale',
               name: 'Scale'
             });
           if (selected.rotation)
             channels.push({
-              param: props[4],
+              param: m.rotation,
               original: target.rotation,
               field: 'rotation',
               name: 'Rotation'
@@ -366,8 +402,6 @@ var PRTrack = (function () {
         active = {
           target: target,
           timing: timing(clip, s),
-          param: p,
-          original: target.position,
           channels: channels,
           selected: selected,
           transform: !!(selected.scale || selected.rotation),
@@ -385,7 +419,7 @@ var PRTrack = (function () {
     },
     chunk: function (keys) {
       return guard(function () {
-        if (!active) fail('Không có tác vụ ghi keyframe đang chạy.');
+        if (!active) fail('Không có tác vụ ghi Keyframe đang chạy.');
         try {
           checkSession(active);
           if (
@@ -394,8 +428,7 @@ var PRTrack = (function () {
             keys.length > 100 ||
             active.keys.length + keys.length > active.count
           )
-            fail('Dữ liệu keyframe không hợp lệ.');
-          var p = active.param;
+            fail('Dữ liệu Keyframe không hợp lệ.');
           for (var i = 0; i < keys.length; i++) {
             var key = keys[i],
               previous = active.keys.length ? active.keys[active.keys.length - 1].time : -Infinity;
@@ -409,7 +442,7 @@ var PRTrack = (function () {
               !numeric(key.value[0]) ||
               !numeric(key.value[1])
             )
-              fail('Tọa độ hoặc thời gian keyframe không hợp lệ.');
+              fail('Tọa độ hoặc thời gian Keyframe không hợp lệ.');
             if (
               (active.selected.scale &&
                 (!numeric(key.scale) || key.scale <= 0 || key.scale > 10000)) ||
@@ -419,8 +452,8 @@ var PRTrack = (function () {
             active.keys.push(key);
             var t = time(key.time);
             for (var c = 0; c < active.channels.length; c++) {
-              var channel = active.channels[c];
-              p = channel.param;
+              var channel = active.channels[c],
+                p = channel.param;
               checkCode(p.addKey(t), 'Thêm Keyframe ' + channel.name);
               checkCode(p.setValueAtKey(t, key[channel.field], true), 'Ghi ' + channel.name);
               // CEP has no interpolation getter. Request Linear without
@@ -440,7 +473,7 @@ var PRTrack = (function () {
         if (!active) fail('Không có tác vụ cần hoàn tất.');
         try {
           checkSession(active);
-          if (active.keys.length !== active.count) fail('Chưa ghi đủ keyframe.');
+          if (active.keys.length !== active.count) fail('Chưa ghi đủ Keyframe.');
           verifyChannels(active);
           last = active;
           active = null;
@@ -461,8 +494,8 @@ var PRTrack = (function () {
     },
     remove: function () {
       return guard(function () {
-        if (active) fail('Vui lòng chờ ghi keyframe xong.');
-        if (!last) fail('Chưa có chuyển động nào để gỡ trong phiên làm việc này.');
+        if (active) fail('Hãy chờ ghi Keyframe xong.');
+        if (!last) fail('Chưa có lần Apply nào để Remove trong phiên làm việc này.');
         checkSession(last);
         verifyChannels(last);
         rollback(last);

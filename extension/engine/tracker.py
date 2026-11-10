@@ -11,8 +11,8 @@ import time
 import cv2
 import numpy as np
 
+ENGINE_VERSION = "0.5.2"
 MAX_SAMPLES = 1000000
-MAX_DURATION = float("inf")
 
 
 def emit(event):
@@ -104,118 +104,182 @@ class LostTrack(ValueError):
     pass
 
 
-class TranslationTracker:
-    """Pyramidal Lucas–Kanade, forward/backward check, robust translation fit.
+# --------------------------------------------------------------------------
+# Shared building blocks
 
-    Feature replenishment stays inside the moving ROI. An appearance check rejects
-    common background-lock failures when the subject disappears.
-    """
+MIN_ROI_PX = 12
+ANALYSIS_MAX_WIDTH = 1280  # frames are downscaled to this width before tracking
+PATCH_SIZE = 48  # appearance template is resampled to PATCH_SIZE x PATCH_SIZE
+LK_PARAMS = dict(
+    winSize=(21, 21),
+    maxLevel=3,
+    criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01),
+)
+LK_MAX_FORWARD_BACKWARD_PX = 1.25
+LK_MAX_ERROR = 35
 
-    def __init__(self, frame, roi, max_width=1280, allow_sparse=False):
-        if not isinstance(roi, list) or len(roi) != 4:
-            raise ValueError("Cần khoanh vùng tracking trước.")
-        x, y, w, h = [number(v, "Vùng tracking") for v in roi]
+
+def parse_roi(frame, roi):
+    """Validate an [x, y, w, h] region in source pixels."""
+    if not isinstance(roi, list) or len(roi) != 4:
+        raise ValueError("Cần khoanh vùng Track trước.")
+    x, y, w, h = [number(v, "Vùng Track") for v in roi]
+    fh, fw = frame.shape[:2]
+    if w < MIN_ROI_PX or h < MIN_ROI_PX or x + w > fw + 0.1 or y + h > fh + 0.1:
+        raise ValueError("Vùng Track phải nằm trong hình và rộng/cao ít nhất 12 pixel.")
+    return x, y, w, h
+
+
+class Downscaler:
+    """Converts source frames to the grayscale analysis resolution."""
+
+    def __init__(self, frame, max_width=ANALYSIS_MAX_WIDTH):
         fh, fw = frame.shape[:2]
-        if w < 12 or h < 12 or x + w > fw + 0.1 or y + h > fh + 0.1:
-            raise ValueError("Vùng tracking phải nằm trong hình và rộng/cao ít nhất 12 pixel.")
         self.scale = min(1.0, max_width / fw)
         self.size = (round(fw * self.scale), round(fh * self.scale))
+
+    def gray(self, frame):
+        small = cv2.resize(frame, self.size, interpolation=cv2.INTER_AREA)
+        return cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+
+
+def rect_mask(shape, roi):
+    x, y, w, h = roi
+    mask = np.zeros(shape, dtype=np.uint8)
+    x0, y0 = max(0, math.ceil(x)), max(0, math.ceil(y))
+    x1, y1 = min(shape[1], math.floor(x + w)), min(shape[0], math.floor(y + h))
+    mask[y0:y1, x0:x1] = 255
+    return mask
+
+
+def polygon_mask(shape, corners):
+    mask = np.zeros(shape, dtype=np.uint8)
+    cv2.fillConvexPoly(mask, np.round(corners).astype(np.int32), 255)
+    return mask
+
+
+def find_corners(gray, mask):
+    return cv2.goodFeaturesToTrack(
+        gray, maxCorners=150, qualityLevel=0.015, minDistance=4, mask=mask, blockSize=5
+    )
+
+
+def lucas_kanade(previous, gray, points):
+    """Pyramidal LK with a forward/backward consistency check.
+
+    Returns (old, new, good): point arrays and a mask of reliable matches.
+    """
+    forward, valid, error = cv2.calcOpticalFlowPyrLK(previous, gray, points, None, **LK_PARAMS)
+    if forward is None:
+        raise LostTrack("Mất điểm bám. Hãy chọn vùng rõ hơn.")
+    back, back_valid, _ = cv2.calcOpticalFlowPyrLK(gray, previous, forward, None, **LK_PARAMS)
+    if back is None:
+        raise LostTrack("Không xác nhận được chuyển động ở Frame này.")
+    old, new = points.reshape(-1, 2), forward.reshape(-1, 2)
+    good = (
+        (valid.ravel() == 1)
+        & (back_valid.ravel() == 1)
+        & (np.linalg.norm(back.reshape(-1, 2) - old, axis=1) < LK_MAX_FORWARD_BACKWARD_PX)
+        & (error.ravel() < LK_MAX_ERROR)
+        & np.isfinite(new).all(axis=1)
+    )
+    return old, new, good
+
+
+def correlation(a, b):
+    """Normalised cross-correlation of two equally sized patches."""
+    a, b = a - a.mean(), b - b.mean()
+    return float((a * b).sum() / max(1e-6, np.linalg.norm(a) * np.linalg.norm(b)))
+
+
+# --------------------------------------------------------------------------
+# Trackers
+
+
+class TranslationTracker:
+    """Position-only tracker: LK points, robust median translation.
+
+    Features are re-detected inside the moving ROI each frame. An appearance
+    check rejects common background-lock failures when the subject disappears.
+    Kept as a simpler baseline; the engine itself uses SimilarityTracker.
+    """
+
+    MIN_POINTS = 6
+
+    def __init__(self, frame, roi):
+        x, y, w, h = parse_roi(frame, roi)
+        self.frames = Downscaler(frame)
+        self.scale = self.frames.scale
         self.roi = np.array([x, y, w, h], dtype=np.float64) * self.scale
-        self.gray = self.gray_frame(frame)
+        self.gray = self.frames.gray(frame)
         self.points = self.features(self.gray)
-        if not allow_sparse and (self.points is None or len(self.points) < 6):
+        if self.points is None or len(self.points) < self.MIN_POINTS:
             raise ValueError("Vùng này ít chi tiết. Hãy chọn vùng có góc cạnh hoặc hoa văn rõ hơn.")
         self.reference = self.patch(self.gray)
         self.reference_std = float(self.reference.std())
 
-    def gray_frame(self, frame):
-        return cv2.cvtColor(
-            cv2.resize(frame, self.size, interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY
-        )
-
     def features(self, gray):
-        x, y, w, h = self.roi
-        mask = np.zeros(gray.shape, dtype=np.uint8)
-        x0, y0 = max(0, math.ceil(x)), max(0, math.ceil(y))
-        x1, y1 = min(gray.shape[1], math.floor(x + w)), min(gray.shape[0], math.floor(y + h))
-        mask[y0:y1, x0:x1] = 255
-        return cv2.goodFeaturesToTrack(
-            gray, maxCorners=150, qualityLevel=0.015, minDistance=4, mask=mask, blockSize=5
-        )
+        return find_corners(gray, rect_mask(gray.shape, self.roi))
 
     def patch(self, gray):
         x, y, w, h = self.roi
         patch = cv2.getRectSubPix(
             gray, (max(2, round(w)), max(2, round(h))), (float(x + w / 2), float(y + h / 2))
         )
-        return cv2.resize(patch, (48, 48)).astype(np.float32)
+        return cv2.resize(patch, (PATCH_SIZE, PATCH_SIZE)).astype(np.float32)
 
     def center(self):
         x, y, w, h = self.roi / self.scale
         return [float(x + w / 2), float(y + h / 2)]
 
     def update(self, frame):
-        gray = self.gray_frame(frame)
-        lk = dict(
-            winSize=(21, 21),
-            maxLevel=3,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01),
-        )
-        forward, valid, error = cv2.calcOpticalFlowPyrLK(self.gray, gray, self.points, None, **lk)
-        if forward is None:
-            raise LostTrack("Mất điểm bám. Hãy chọn đoạn ngắn hơn hoặc vùng rõ hơn.")
-        back, back_valid, _ = cv2.calcOpticalFlowPyrLK(gray, self.gray, forward, None, **lk)
-        if back is None:
-            raise LostTrack("Không xác nhận được chuyển động ở frame này.")
-        old = self.points.reshape(-1, 2)
-        new = forward.reshape(-1, 2)
-        fb = np.linalg.norm(back.reshape(-1, 2) - old, axis=1)
-        good = (
-            (valid.ravel() == 1)
-            & (back_valid.ravel() == 1)
-            & (fb < 1.25)
-            & (error.ravel() < 35)
-            & np.isfinite(new).all(axis=1)
-        )
-        if int(good.sum()) < 6:
+        gray = self.frames.gray(frame)
+        old, new, good = lucas_kanade(self.gray, gray, self.points)
+        if int(good.sum()) < self.MIN_POINTS:
             raise LostTrack("Mất điểm bám: vật thể bị che, mờ hoặc chuyển động quá nhanh.")
         delta = new[good] - old[good]
-        median = np.median(delta, axis=0)
-        residual = np.linalg.norm(delta - median, axis=1)
+        residual = np.linalg.norm(delta - np.median(delta, axis=0), axis=1)
         inliers = residual < max(1.5, min(3.0, float(np.median(residual)) * 2.5))
         confidence = float(inliers.sum() / len(old))
-        if int(inliers.sum()) < 6 or confidence < 0.45:
+        if int(inliers.sum()) < self.MIN_POINTS or confidence < 0.45:
             raise LostTrack("Chuyển động không nhất quán. Khoanh vùng gọn hơn quanh vật thể.")
-        motion = np.median(delta[inliers], axis=0)
-        self.roi[:2] += motion
+        self.roi[:2] += np.median(delta[inliers], axis=0)
         x, y, w, h = self.roi
         if x < 0 or y < 0 or x + w > gray.shape[1] or y + h > gray.shape[0]:
             raise LostTrack("Vật thể đã ra khỏi khung hình.")
-        current = self.patch(gray)
-        if self.reference_std > 5:
-            a, b = self.reference - self.reference.mean(), current - current.mean()
-            corr = float((a * b).sum() / max(1e-6, np.linalg.norm(a) * np.linalg.norm(b)))
-            if corr < 0.2:
-                raise LostTrack("Hình dạng vùng bám thay đổi quá nhiều; hãy tracking lại từ đây.")
+        if self.reference_std > 5 and correlation(self.reference, self.patch(gray)) < 0.2:
+            raise LostTrack("Hình dạng vùng bám thay đổi quá nhiều; hãy Track lại từ đây.")
         self.gray = gray
-        # Re-detect inside the translated ROI instead of accumulating background features.
         self.points = self.features(gray)
-        if self.points is None or len(self.points) < 6:
-            raise LostTrack("Không còn đủ chi tiết để tiếp tục tracking.")
+        if self.points is None or len(self.points) < self.MIN_POINTS:
+            raise LostTrack("Không còn đủ chi tiết để tiếp tục Track.")
         return self.center(), confidence
 
 
-class SimilarityTracker(TranslationTracker):
-    """Track a similarity transform (translation, uniform scale, rotation)."""
+class SimilarityTracker:
+    """Track a similarity transform (translation, uniform scale, rotation).
+
+    Each frame tries, in order: LK + RANSAC, template/ECC alignment, ORB
+    re-detection. `matrix` maps the initial ROI (analysis pixels) into the
+    current frame.
+    """
 
     def __init__(self, frame, roi):
-        super().__init__(frame, roi, allow_sparse=True)
+        x, y, w, h = parse_roi(frame, roi)
+        self.frames = Downscaler(frame)
+        self.scale = self.frames.scale
+        self.initial_roi = np.array([x, y, w, h], dtype=np.float64) * self.scale
         self.matrix = np.eye(3, dtype=np.float64)
-        self.initial_roi = self.roi.copy()
         self.rotation = 0.0
         self.methods = {"flow_update": 0, "template_update": 0, "recover": 0}
+        self.gray = self.frames.gray(frame)
+        # Sparse regions are allowed: template/ECC can still follow them.
+        self.points = find_corners(self.gray, rect_mask(self.gray.shape, self.initial_roi))
         self.reference = self.patch(self.gray)
         self.reference_std = float(self.reference.std())
+
+    def gray_frame(self, frame):
+        return self.frames.gray(frame)
 
     def corners(self):
         x, y, w, h = self.initial_roi
@@ -223,27 +287,24 @@ class SimilarityTracker(TranslationTracker):
         return (points @ self.matrix.T)[:, :2]
 
     def features(self, gray):
-        if not hasattr(self, "matrix"):
-            return super().features(gray)
-        mask = np.zeros(gray.shape, dtype=np.uint8)
-        cv2.fillConvexPoly(mask, np.round(self.corners()).astype(np.int32), 255)
-        return cv2.goodFeaturesToTrack(
-            gray, maxCorners=150, qualityLevel=0.015, minDistance=4, mask=mask, blockSize=5
+        return find_corners(gray, polygon_mask(gray.shape, self.corners()))
+
+    def patch_grid(self):
+        x, y, w, h = self.initial_roi
+        return np.array(
+            [[w / PATCH_SIZE, 0, x], [0, h / PATCH_SIZE, y], [0, 0, 1]], dtype=np.float64
         )
 
     def patch(self, gray):
-        if not hasattr(self, "matrix"):
-            return super().patch(gray)
-        # Map the original ROI grid into the current frame, undoing scale/rotation.
-        x, y, w, h = self.initial_roi
-        grid = np.array([[w / 48, 0, x], [0, h / 48, y], [0, 0, 1]], dtype=np.float64)
+        """The ROI resampled with scale/rotation undone."""
         return cv2.warpAffine(
-            gray, (self.matrix @ grid)[:2], (48, 48), flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP
+            gray,
+            (self.matrix @ self.patch_grid())[:2],
+            (PATCH_SIZE, PATCH_SIZE),
+            flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
         ).astype(np.float32)
 
     def center(self):
-        if not hasattr(self, "matrix"):
-            return super().center()
         x, y, w, h = self.initial_roi
         p = self.matrix @ np.array([x + w / 2, y + h / 2, 1])
         return (p[:2] / self.scale).tolist()
@@ -252,25 +313,7 @@ class SimilarityTracker(TranslationTracker):
         if self.points is None or len(self.points) < 8:
             raise LostTrack("Không đủ corner cho Optical Flow; chuyển sang Template Matching.")
         gray = self.gray_frame(frame)
-        lk = dict(
-            winSize=(21, 21),
-            maxLevel=3,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01),
-        )
-        forward, valid, error = cv2.calcOpticalFlowPyrLK(self.gray, gray, self.points, None, **lk)
-        if forward is None:
-            raise LostTrack("Mất điểm Tracking. Hãy chọn vùng rõ hơn.")
-        back, back_valid, _ = cv2.calcOpticalFlowPyrLK(gray, self.gray, forward, None, **lk)
-        if back is None:
-            raise LostTrack("Không xác nhận được chuyển động ở Frame này.")
-        old, new = self.points.reshape(-1, 2), forward.reshape(-1, 2)
-        good = (
-            (valid.ravel() == 1)
-            & (back_valid.ravel() == 1)
-            & (error.ravel() < 35)
-            & (np.linalg.norm(back.reshape(-1, 2) - old, axis=1) < 1.25)
-            & np.isfinite(new).all(axis=1)
-        )
+        old, new, good = lucas_kanade(self.gray, gray, self.points)
         if good.sum() < 8:
             raise LostTrack("Không đủ điểm để tính Scale/Rotation. Chọn vùng rộng và rõ hơn.")
         affine, mask = cv2.estimateAffinePartial2D(
@@ -309,10 +352,9 @@ class SimilarityTracker(TranslationTracker):
         ):
             raise LostTrack("Vùng Tracking đã ra khỏi khung hình.")
         current = self.patch(gray)
-        a, b = self.reference - self.reference.mean(), current - current.mean()
-        corr = float((a * b).sum() / max(1e-6, np.linalg.norm(a) * np.linalg.norm(b)))
+        corr = correlation(self.reference, current)
         if self.reference_std > 5 and corr < 0.2:
-            raise LostTrack("Vật thể bị che hoặc thay đổi hình dạng. Hãy Tracking lại từ đây.")
+            raise LostTrack("Vật thể bị che hoặc thay đổi hình dạng. Hãy Track lại từ đây.")
         self.gray = gray
         self.points = self.features(gray)
         # Adapt only after an appearance-validated frame. This follows the
@@ -324,8 +366,7 @@ class SimilarityTracker(TranslationTracker):
 
     def recover(self, frame):
         gray = self.gray_frame(frame)
-        mask = np.zeros(self.gray.shape, np.uint8)
-        cv2.fillConvexPoly(mask, np.round(self.corners()).astype(np.int32), 255)
+        mask = polygon_mask(self.gray.shape, self.corners())
         orb = cv2.ORB_create(nfeatures=2000, edgeThreshold=8, patchSize=21, fastThreshold=7)
         old_keys, old_desc = orb.detectAndCompute(self.gray, mask)
         new_keys, new_desc = orb.detectAndCompute(gray, None)
@@ -388,8 +429,7 @@ class SimilarityTracker(TranslationTracker):
         search = gray[search_lo[1] : search_hi[1], search_lo[0] : search_hi[0]]
         scores = cv2.matchTemplate(search, feature, cv2.TM_CCOEFF_NORMED)
         _, score, _, location = cv2.minMaxLoc(scores)
-        x, y, rw, rh = self.initial_roi
-        grid = np.array([[rw / 48, 0, x], [0, rh / 48, y], [0, 0, 1]], np.float64)
+        grid = self.patch_grid()
         warp = (self.matrix @ grid)[:2].astype(np.float32)
         if score >= 0.45:
             warp[:, 2] += search_lo + np.array(location) - lo
@@ -580,7 +620,9 @@ def run_bidirectional(request, progress=lambda event: None):
                         metadata=video.metadata(),
                         image=jpeg(sample_frame),
                         failure=dict(
-                            kind="video_read_error", sourceFrame=current_source, engine="0.5.2"
+                            kind="video_read_error",
+                            sourceFrame=current_source,
+                            engine=ENGINE_VERSION,
                         ),
                     )
                 if current_source == source_indices[seed]:
@@ -630,96 +672,10 @@ def run_bidirectional(request, progress=lambda event: None):
 
 
 def run_track(request, progress=lambda event: None):
-    if "seedOffset" in request:
-        return run_bidirectional(request, progress)
-    start = number(request.get("start"), "Thời điểm bắt đầu")
-    duration = number(request.get("duration"), "Thời lượng", 0.01, MAX_DURATION)
-    fps = number(request.get("fps"), "FPS sequence", 1, 120)
-    count = math.ceil(duration * fps - 1e-7)
-    if count < 2 or count > MAX_SAMPLES:
-        raise ValueError("Đoạn tracking cần ít nhất 2 và tối đa 1.000.000 khung hình.")
-    video = Video(request.get("path"))
-    try:
-        last_time = start + (count - 1) / fps
-        if math.floor(last_time * video.fps + 1e-7) >= video.count:
-            raise ValueError("Đoạn tracking vượt quá video nguồn.")
-        frame = video.seek(start)
-        sample_frame = frame
-        mode = request.get("mode", "position")
-        if mode not in ("position", "transform"):
-            raise ValueError("Chế độ Tracking không hợp lệ.")
-        # Channel selection controls what is applied to the graphic, not which
-        # changes the object may undergo. Align scale/rotation for appearance
-        # validation even when the user only wants Position output.
-        tracker = SimilarityTracker(frame, request.get("roi"))
-        estimated = tracker.reference_std < 1
-        points = [track_point(tracker, 0.0, 0.0 if estimated else 1.0, estimated)]
-        velocity = np.zeros(2)
-        lost_source_frames = 0
-        sample_estimated = estimated
-        last_progress = 0
-        confidence = 1.0
-        for sample in range(1, count):
-            wanted = math.floor((start + sample / fps) * video.fps + 1e-7)
-            sample_estimated = estimated
-            while video.index < wanted:
-                try:
-                    frame = video.next()
-                except ValueError as exc:
-                    return dict(
-                        complete=False,
-                        reason=str(exc),
-                        methods=tracker.methods,
-                        failure=dict(
-                            kind="video_read_error", sourceFrame=video.index, engine="0.5.2"
-                        ),
-                        points=points,
-                        expected=count,
-                        metadata=video.metadata(),
-                        image=jpeg(sample_frame),
-                    )
-                before = np.array(tracker.center())
-                was_estimated = estimated
-                try:
-                    _, confidence = tracker.update(frame)
-                    estimated = False
-                    velocity = np.zeros(2) if was_estimated else np.array(tracker.center()) - before
-                except (LostTrack, cv2.error, np.linalg.LinAlgError):
-                    tracker.estimate_next(frame, velocity)
-                    estimated = True
-                    confidence = 0.0
-                    lost_source_frames += 1
-                sample_estimated = sample_estimated or estimated
-            points.append(
-                track_point(
-                    tracker, sample / fps, 0.0 if sample_estimated else confidence, sample_estimated
-                )
-            )
-            sample_frame = frame
-            now = time.monotonic()
-            if now - last_progress >= 0.2 or sample == count - 1:
-                progress(
-                    dict(
-                        type="progress",
-                        done=sample + 1,
-                        total=count,
-                        point=points[-1],
-                        image=jpeg(frame),
-                    )
-                )
-                last_progress = now
-        return dict(
-            complete=True,
-            points=points,
-            expected=count,
-            methods=tracker.methods,
-            estimatedFrames=sum(p["estimated"] for p in points),
-            lostSourceFrames=lost_source_frames,
-            metadata=video.metadata(),
-            image=jpeg(frame),
-        )
-    finally:
-        video.close()
+    """Track from a seed frame. Without a seed, track forward from the clip start."""
+    if "seedOffset" not in request:
+        request = dict(request, seedOffset=0, direction="forward")
+    return run_bidirectional(request, progress)
 
 
 def handle(request):
@@ -729,7 +685,7 @@ def handle(request):
             python=sys.version.split()[0],
             opencv=cv2.__version__,
             executable=sys.executable,
-            engine="0.5.2",
+            engine=ENGINE_VERSION,
             tracking="LK + adaptive template/ECC + ORB",
         )
     if command == "preview":

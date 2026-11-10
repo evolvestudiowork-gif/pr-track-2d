@@ -8,3 +8,4 @@ extension/config.json
 .build-env/
 build/
 extension/runtime/
+node_modules/

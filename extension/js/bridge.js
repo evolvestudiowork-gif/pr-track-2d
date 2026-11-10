@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  var M = window.TrackMessages;
   var isHost = !!window.__adobe_cep__;
   var req = window.cep_node
     ? window.cep_node.require
@@ -16,12 +17,9 @@
   var current = null;
 
   function call(method, arg) {
-    if (!isHost)
-      return Promise.reject(
-        new Error('Mở panel từ Window > Extensions > PR Track 2D trong Premiere.')
-      );
+    if (!isHost) return Promise.reject(new Error(M.openInPremiere));
     if (!/^(source|range|target|begin|chunk|finish|abort|remove)$/.test(method))
-      return Promise.reject(new Error('Lệnh Premiere không hợp lệ.'));
+      return Promise.reject(new Error(M.invalidHostCommand));
     var payload =
       arg === undefined
         ? ''
@@ -75,9 +73,8 @@
     );
   }
   function engine(request, python, onProgress) {
-    if (!req || !isHost)
-      return Promise.reject(new Error('Bộ xử lý chỉ chạy trong panel Premiere.'));
-    if (current) return Promise.reject(new Error('Đang xử lý tác vụ khác.'));
+    if (!req || !isHost) return Promise.reject(new Error(M.engineHostOnly));
+    if (current) return Promise.reject(new Error(M.engineBusy));
     var bundled = bundledPath();
     var portable = hasBundledEngine();
     var executable = portable
@@ -114,7 +111,7 @@
             else if (event.type === 'error') failure = event.message;
             else if (event.type === 'progress' && onProgress) onProgress(event);
           } catch (e) {
-            failure = 'Phản hồi bộ xử lý không hợp lệ: ' + e.message;
+            failure = M.engineBadResponse(e.message);
           }
         }
       });
@@ -125,17 +122,14 @@
         /* The exit handler reports startup failures. */
       });
       proc.on('error', function (error) {
-        failure = 'Không mở được bộ xử lý: ' + error.message;
+        failure = M.engineStartFailed(error.message);
       });
       proc.on('close', function (code) {
         if (current === job) current = null;
-        if (job.cancelled)
-          return reject(new Error('Đã dừng phân tích. Có thể chọn lại vùng rồi chạy tiếp.'));
+        if (job.cancelled) return reject(new Error(M.engineCancelled));
         if (failure || code !== 0 || !result) {
-          var message =
-            failure || stderr.trim() || 'Engine dừng bất thường (exit code ' + code + ').';
-          if (/No module named/.test(message))
-            message += '\nChạy Install-PRTrack.cmd hoặc cài requirements.txt cho Python đã chọn.';
+          var message = failure || stderr.trim() || M.engineCrashed(code);
+          if (/No module named/.test(message)) message += '\n' + M.engineMissingModule;
           return reject(new Error(message));
         }
         resolve(result);
@@ -150,13 +144,8 @@
     }
   }
   function save(data) {
-    if (!window.cep || !window.cep.fs) throw new Error('Chỉ xuất file từ panel Premiere.');
-    var dialog = window.cep.fs.showSaveDialogEx(
-      'Xuất tracking JSON',
-      '',
-      ['json'],
-      'pr-track.json'
-    );
+    if (!window.cep || !window.cep.fs) throw new Error(M.exportHostOnly);
+    var dialog = window.cep.fs.showSaveDialogEx(M.exportDialogTitle, '', ['json'], 'pr-track.json');
     if (dialog.err || !dialog.data) return false;
     fs.writeFileSync(dialog.data, JSON.stringify(data, null, 2), 'utf8');
     return true;

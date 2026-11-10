@@ -1,0 +1,5 @@
+# Pinned versions used to build and test the standalone engine (CI and release).
+# extension/requirements.txt lists the looser ranges for running from source.
+numpy==2.4.6
+opencv-python-headless==4.13.0.92
+pyinstaller==6.22.0

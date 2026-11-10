@@ -15,6 +15,9 @@ test('direction controls swap with Stop while tracking and reset after cancellat
       disabled: false,
       events: {},
       parentNode: {},
+      setAttribute(name, value) {
+        this[name] = value;
+      },
       addEventListener(name, callback) {
         this.events[name] = callback;
       }
@@ -25,7 +28,6 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   canvas.height = 240;
   canvas.getContext = () => new Proxy({}, { get: () => () => {} });
   canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 240 });
-  canvas.setPointerCapture = () => {};
   let rejectTrack,
     resolveTrack,
     cancelled = 0;
@@ -66,9 +68,13 @@ test('direction controls swap with Stop while tracking and reset after cancellat
       rejectTrack(new Error('Stopped'));
     }
   };
+  const documentEvents = {};
   const context = {
     window: { TrackBridge: bridge, TrackMapping: { createKeys: () => [{}, {}] } },
     document: {
+      addEventListener(name, callback) {
+        documentEvents[name] = callback;
+      },
       getElementById: (id) => {
         assert.ok(elements[id], id);
         return elements[id];
@@ -87,17 +93,19 @@ test('direction controls swap with Stop while tracking and reset after cancellat
       }
     }
   };
-  vm.runInNewContext(
-    fs.readFileSync(path.join(__dirname, '../extension/js/panel.js'), 'utf8'),
-    context
-  );
+  vm.createContext(context);
+  for (const file of ['messages', 'controls', 'preview', 'panel'])
+    vm.runInContext(
+      fs.readFileSync(path.join(__dirname, `../extension/js/${file}.js`), 'utf8'),
+      context
+    );
   assert.equal(elements.cancelButton.hidden, true);
   assert.equal(elements.resetButton.disabled, true);
   elements.sourceButton.events.click();
   await new Promise(setImmediate);
-  canvas.events.pointerdown({ button: 0, clientX: 30, clientY: 30, pointerId: 1 });
-  canvas.events.pointermove({ clientX: 100, clientY: 100 });
-  canvas.events.pointerup();
+  canvas.events.mousedown({ button: 0, clientX: 30, clientY: 30, preventDefault() {} });
+  documentEvents.mousemove({ clientX: 100, clientY: 100 });
+  documentEvents.mouseup();
   assert.equal(requests[0].time, 0.5);
   assert.equal(elements.trackButton.disabled, false);
   elements.trackButton.events.click();
@@ -141,9 +149,9 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   // The existing Source can immediately be reselected on the canvas and tracked.
   assert.equal(elements.previewButton.disabled, false);
   assert.equal(elements.emptyPreview.hidden, true);
-  canvas.events.pointerdown({ button: 0, clientX: 30, clientY: 30, pointerId: 1 });
-  canvas.events.pointermove({ clientX: 100, clientY: 100 });
-  canvas.events.pointerup();
+  canvas.events.mousedown({ button: 0, clientX: 30, clientY: 30, preventDefault() {} });
+  documentEvents.mousemove({ clientX: 100, clientY: 100 });
+  documentEvents.mouseup();
   elements.trackButton.events.click();
   await new Promise(setImmediate);
   resolveTrack({
@@ -172,5 +180,7 @@ test('direction controls swap with Stop while tracking and reset after cancellat
   elements.removeButton.events.click();
   await new Promise(setImmediate);
   assert.equal(hostCalls.at(-1), 'remove');
+  assert.equal(elements.stepSource['data-state'], 'done');
+  assert.equal(elements.stepApply['data-state'], 'pending', 'Reset cleared the track result');
   assert.equal(elements.removeButton.disabled, true);
 });

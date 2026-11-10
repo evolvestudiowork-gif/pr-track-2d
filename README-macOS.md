@@ -1,19 +1,12 @@
-# PR Track 2D v0.5.0 — macOS preview
+# PR Track 2D — macOS
 
-Đã có ZIP standalone native cho Apple Silicon và Intel tại Release v0.5.0. Cả hai engine đã qua kiểm thử trên runner macOS, không cần Python trên máy nhận. Chưa kiểm tra tích hợp Premiere/Gatekeeper trên Mac thật. Source Kit là source để build lại, không phải bộ cài.
+Có ZIP standalone native cho Apple Silicon (arm64) và Intel (x86_64) trong mỗi GitHub Release. Không cần Python trên máy nhận. Chưa kiểm tra tích hợp Premiere/Gatekeeper trên Mac thật.
 
-## Tạo bộ cài qua GitHub Actions
+## Bộ cài được build thế nào
 
-1. Giải nén Source Kit và đưa toàn bộ source lên repo, giữ cả `.github/workflows/build-macos.yml`.
-2. Repo hiện chỉ chứa README/Releases thì cần thêm source trước; không upload `.build-env`, `build`, runtime Windows hoặc `dist`.
-3. Mở **Actions → Build macOS standalone → Run workflow**.
-4. Workflow chạy độc lập trên `macos-26` (Apple Silicon) và `macos-15-intel` (Intel), build native và kiểm thử engine. Workflow không tự publish Release.
-5. Khi cả hai job thành công, tải Artifacts. Mỗi artifact chứa ZIP standalone thật và SHA256.
-6. Giải nén artifact ngoài để lấy ZIP `PR-Track-2D-<version>-macOS-arm64-Standalone.zip` hoặc `...-macOS-x86_64-Standalone.zip`, rồi đính kèm ZIP đó vào GitHub Release.
+Workflow **Build macOS standalone** (`.github/workflows/build-macos.yml`, chạy tay trong tab Actions) build engine trên `macos-26` (Apple Silicon) và `macos-15-intel` (Intel), kiểm thử engine trên chính máy đó, rồi xuất ZIP thành Artifact để đính kèm vào Release. Quy trình phát hành: xem [GITHUB-RELEASES.md](GITHUB-RELEASES.md).
 
-Build trên runner macOS 26 (Apple Silicon) và macOS 15 (Intel). Engine được kiểm thử trên runner đó; phiên bản macOS tối thiểu và tích hợp Premiere cần kiểm chứng trên máy thật.
-
-## Cài trên Mac sau khi build thành công
+## Cài trên Mac
 
 1. Chọn đúng ZIP theo kiến trúc chạy Premiere/CEP. Apple Silicon chạy native dùng arm64; Intel hoặc CEP chạy Rosetta cần x86_64.
 2. Giải nén bằng Finder/Archive Utility để giữ symlink và quyền executable.
@@ -31,11 +24,11 @@ Nếu macOS từ chối mở, xem thông báo hệ thống hoặc hướng dẫn
 
 ## Tính năng dùng chung
 
-Tracking hai chiều, Position/Scale/Rotation, Estimated, Apply cho Graphic ngắn, Reset và giao diện hồng pastel dùng chung với Windows. Updates trên Mac chọn asset theo kiến trúc của tiến trình CEP. Nếu Release chỉ có ZIP Windows, Mac sẽ không báo có bộ cài phù hợp.
+Tracking hai chiều, Position/Scale/Rotation, Estimated, Apply cho Graphic ngắn, Reset và giao diện dùng chung với Windows. Updates trên Mac chọn asset theo kiến trúc của tiến trình CEP. Nếu Release chỉ có ZIP Windows, Mac sẽ không báo có bộ cài phù hợp.
 
 ## Build thủ công trên Mac
 
-Trong một checkout mới, cài Python 3.11 đúng kiến trúc, dependencies trong workflow, chuẩn bị giấy phép Python tại `build/Python-LICENSE.txt`, rồi chạy:
+Trong một checkout mới, cài Python 3.11 đúng kiến trúc và `pip install -r scripts/requirements-build.txt`, chuẩn bị giấy phép Python tại `build/Python-LICENSE.txt`, rồi chạy:
 
 ```sh
 python3 scripts/build_runtime.py
@@ -48,4 +41,4 @@ CEP: https://github.com/Adobe-CEP/CEP-Resources
 
 ## Một phiên bản, nhiều hệ điều hành
 
-Windows, macOS arm64 và macOS x86_64 dùng chung tag **v0.5.0**. Đính kèm các ZIP standalone theo OS vào cùng Release; không tạo tag riêng cho Mac. Source Kit chỉ để build, không phải asset cài đặt dành cho người dùng cuối.
+Windows, macOS arm64 và macOS x86_64 dùng chung một tag và một Release. Không tạo tag riêng cho Mac.

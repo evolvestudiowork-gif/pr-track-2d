@@ -470,3 +470,10 @@ test('stored target rejects another sequence or deleted clip', () => {
   assert.equal(h.call('target', { nodeId: 'deleted', sequenceId: h.target.sequenceId }).ok, false);
   assert.equal(h.run('pos.varying'), false);
 });
+test('unrecognised Motion layout is rejected instead of writing to the wrong parameter', () => {
+  const h = setup();
+  h.run('dst.components[0].properties[3] = param([0, 0])');
+  const result = h.call('target', { nodeId: 'graphic', sequenceId: 'sequence' });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /cấu trúc Motion/);
+});

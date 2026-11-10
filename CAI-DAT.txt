@@ -1,4 +1,4 @@
-PR TRACK 2D 0.5.1 — PREMIERE PRO 2026 / WINDOWS
+PR TRACK 2D 0.5.2 — PREMIERE PRO 2026–2027 / WINDOWS
 
 1. Giải nén TOÀN BỘ ZIP, đóng Premiere, chạy Install-PRTrack.cmd.
 2. Mở Window > Extensions > PR Track 2D.
@@ -17,5 +17,5 @@ Không cần Python/OpenCV. Không tách EXE khỏi thư mục runtime.
 Gói beta CEP chưa ký số; máy mới cần cho phép extension CEP phát triển.
 Bộ cài không tự đổi registry. Tính năng mới chưa xác nhận trực tiếp trong Premiere.
 
-Updates: nhập evolvestudiowork-gif/pr-track-2d rồi Check for Updates.
+Updates: panel tự kiểm tra bản mới khi mở; có thể tắt trong mục Updates.
 Xem README.md và GITHUB-RELEASES.md để biết chi tiết.

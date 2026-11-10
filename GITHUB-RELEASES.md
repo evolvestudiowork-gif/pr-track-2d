@@ -1,35 +1,59 @@
-# Phát hành PR Track 2D qua GitHub
+# Phát hành PR Track 2D
 
-Repo đề xuất: `TEN-TAI-KHOAN/pr-track-2d`, Public.
-Nếu muốn giữ source private: dùng repo public `pr-track-2d-releases` chỉ chứa Release.
-Panel hiện hỗ trợ public GitHub.com, không lưu token và không đọc repo private.
+Mỗi bản phát hành gồm ba ZIP standalone (Windows, macOS arm64, macOS x86_64) trong cùng một GitHub Release.
 
-## Thiết lập một lần
+## Trong lúc phát triển
 
-1. Tạo repo trên GitHub. Push source nếu muốn công khai source.
-2. Trong panel → Updates → GitHub Repository, nhập `owner/repo` rồi bấm **Check for Updates**.
-3. Giữ bật **Check for Updates khi mở panel**. Repo và lựa chọn này lưu trên máy, giữ qua lần cài đè.
+- Ghi mọi thay đổi người dùng thấy được vào mục **Chưa phát hành** trong [CHANGELOG.md](CHANGELOG.md).
+- Kiểm tra cục bộ: `npm ci`, rồi `npm run check`, `npm run lint`, `npm test`, `npm run test:engine`. `npm run format` định dạng lại code.
 
-## Mỗi lần phát hành
+## Phát hành một phiên bản
 
-1. Tăng version trong package.json, manifest.xml, badge HTML, host.jsx, bridge.js và updates.js.
-2. Nếu engine thay đổi, build lại runtime; chạy kiểm thử và `python scripts/package.py`.
-3. GitHub → Releases → Draft a new release. Tag `v0.4.2` (đổi thành version thực tế).
-4. Upload `PR-Track-2D-0.4.2-Windows-Standalone.zip` từ dist; đính kèm SHA256 nếu có.
-5. Publish Release chính thức, không chọn Pre-release. Chọn Set as latest khi cần.
+1. Thử bản hiện tại trong Premiere trên Windows và Mac.
+2. Kiểm tra mục **Chưa phát hành** trong CHANGELOG.md đã đủ và đúng.
+3. Trên `main`, với working tree sạch:
 
-**Push commit hoặc tạo tag riêng không phát hành bộ cài.** ZIP Source code mà GitHub tự tạo không có runtime.
-Không đưa `.build-env`, runtime sinh tự động, build, test-output hay cấu hình máy vào Git.
-ZIP installer được upload riêng ở Release assets.
+   ```sh
+   npm version 0.x.y
+   git push --follow-tags
+   ```
 
-Panel gọi [GitHub Latest Release API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release)
-khi mở và khi bấm Check for Updates. Chỉ báo tải nếu version mới hơn và có asset standalone đúng tên.
-Nút tải mở trang Release trong trình duyệt. Người dùng tải ZIP, đóng Premiere và chạy Install-PRTrack.cmd.
-Không tự chạy file tải xuống, không tự thay plugin đang hoạt động.
-Mất mạng, chưa có Release hoặc rate limit chỉ hiện trạng thái Updates; Tracking vẫn chạy offline.
+   `npm version` cập nhật package.json, đồng bộ số phiên bản vào manifest, host.jsx, bridge.js, updates.js, tracker.py và mục Updates; đổi **Chưa phát hành** trong CHANGELOG.md thành `0.x.y` kèm ngày; rồi tạo commit và tag `v0.x.y`. Lệnh dừng lại nếu CHANGELOG chưa có nội dung.
 
-Bản đầu có tính năng này vẫn cần cài thủ công. Không thể tự thêm updater vào các bản cũ đã cài.
+4. **ZIP macOS:** trên GitHub, **Actions → Build macOS standalone → Run workflow**. Khi xong, tải hai Artifact và giải nén để lấy `PR-Track-2D-0.x.y-macOS-arm64-Standalone.zip` và `...-macOS-x86_64-Standalone.zip`.
+5. **ZIP Windows:** trên máy Windows x64, trong checkout của tag:
 
-## Windows và macOS cùng Release v0.5.0
+   ```sh
+   python -m pip install -r scripts/requirements-build.txt
+   python scripts/build_runtime.py
+   python scripts/verify_runtime.py
+   python scripts/package.py
+   ```
 
-Đính kèm Windows-Standalone.zip, macOS-arm64-Standalone.zip và macOS-x86_64-Standalone.zip (cùng tiền tố PR-Track-2D-0.5.0-) vào một Release v0.5.0. Hai ZIP Mac cần được build/kiểm thử trên runner Mac trước. Không cần tạo Release 0.6.0 chỉ để thêm OS. Các bản đã cài 0.5.0 sẽ không báo phiên bản mới khi thêm asset cùng version; người dùng tải thủ công đúng OS từ Release.
+   ZIP nằm trong `dist/`.
+
+6. GitHub → **Releases → Draft a new release**, chọn tag `v0.x.y`, tiêu đề `PR Track 2D v0.x.y`. Ghi chú phát hành lấy bằng:
+
+   ```sh
+   node scripts/changelog.cjs notes
+   ```
+
+   Upload ba ZIP, rồi **Publish release** (không chọn Pre-release).
+
+Chỉ sau khi Publish, panel mới báo có bản mới.
+
+## Cách panel kiểm tra cập nhật
+
+Panel gọi [GitHub Latest Release API](https://docs.github.com/en/rest/releases/releases#get-the-latest-release) khi mở và khi bấm **Check for Updates**. Panel chỉ báo khi có phiên bản mới hơn và Release có ZIP đúng tên theo hệ điều hành:
+
+- `PR-Track-2D-<version>-Windows-Standalone.zip`
+- `PR-Track-2D-<version>-macOS-arm64-Standalone.zip`
+- `PR-Track-2D-<version>-macOS-x86_64-Standalone.zip`
+
+Nút tải mở trang Release trong trình duyệt; người dùng tải ZIP, đóng Premiere và chạy bộ cài. Panel không tự tải hay tự cài. Mất mạng hoặc bị GitHub giới hạn lượt gọi chỉ ảnh hưởng mục Updates; Tracking vẫn chạy offline.
+
+Repo mặc định là `evolvestudiowork-gif/pr-track-2d` (hằng số `DEFAULT_REPO` trong `extension/js/updates.js`).
+
+## Không đưa vào Git
+
+`.build-env`, `build/`, `dist/`, `extension/runtime/`, `extension/config.json`, `node_modules/`. ZIP "Source code" mà GitHub tự tạo cho mỗi tag không có runtime, không dùng để cài.

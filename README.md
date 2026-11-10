@@ -1,12 +1,12 @@
-# PR Track 2D 🌸
+# PR Track 2D
 
-Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026 trên Windows và macOS**, giúp gắn Text / Graphic theo chuyển động trong video.
+Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026–2027 trên Windows và macOS**, giúp gắn Text / Graphic theo chuyển động trong video.
 
 [**Tải phiên bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Lịch sử cập nhật](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
-## Giao diện v0.5.2
+## Giao diện
 
-Source → Preview → Channels → Track → Target → Apply. Chọn riêng Backward / Track Both / Forward; Use Selected Graphic giữ đích Apply theo ID dù đổi selection trên Timeline. Remove Tracking khôi phục lần Apply gần nhất, giữ dữ liệu Track. Apply hiện rõ lý do khi chưa sẵn sàng; Advanced và Updates tách riêng.
+Panel chia thành ba bước: **1 Source → 2 Track → 3 Apply**. Bước đang làm được tô màu, bước đã xong hiện dấu ✓. Rê chuột lên nút hoặc checkbox để xem giải thích. Màu nền và cỡ chữ theo giao diện Premiere, kể cả khi đổi độ sáng trong Preferences › Appearance.
 
 Reset Tracking xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc để khoanh lại. Source, Target, Channels, Smoothing, Motion Gain và Keyframe trên Timeline được giữ nguyên.
 
@@ -25,7 +25,7 @@ Reset Tracking xóa vùng chọn và kết quả Track, đưa Preview về Frame
 
 ## Yêu cầu
 
-- Windows 64-bit hoặc macOS Apple Silicon/Intel, Adobe Premiere Pro 2026 (26.x), có CEP 12.
+- Windows 64-bit hoặc macOS Apple Silicon/Intel, Adobe Premiere Pro 2026 (26.x) hoặc 2027 (27.x), có CEP 12.
 - Engine Mac đã kiểm thử trên runner macOS 26 (Apple Silicon) và macOS 15 (Intel); Premiere/Gatekeeper trên máy Mac thực tế cần kiểm chứng riêng.
 - Video có tốc độ Frame cố định (CFR), pixel vuông, tốc độ phát 100%, không phát ngược.
 - Nếu video đã dùng speed ramp, Warp Stabilizer hoặc Scale to Frame Size, hãy xuất thành video trước khi Tracking.
@@ -96,19 +96,13 @@ Remove Tracking chỉ nhớ lần Apply gần nhất trong phiên hiện tại. 
 
 ### 5. Reset Tracking khi cần Track lại
 
-Bấm **Reset Tracking** để xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc rồi khoanh lại ngay trên Source đang dùng. Không cần chọn lại video. Nếu đang Tracking, bấm **Stop** trước khi Reset.
+Bấm **Reset** ở bước Track để xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc rồi khoanh lại ngay trên Source đang dùng. Không cần chọn lại video. Nếu đang Tracking, bấm **Stop** trước khi Reset.
 
 Reset Tracking giữ nguyên Source, Target, Channels, Smoothing, Motion Gain và Keyframe đã Apply trên Timeline; vẫn có thể **Remove Tracking** cho lần Apply gần nhất. Cấu hình Python và Updates được giữ nguyên.
 
 ## Kiểm tra cập nhật
 
-Trong **Updates**, nhập Repository:
-
-```text
-evolvestudiowork-gif/pr-track-2d
-```
-
-Bấm **Check for Updates** và bật **Check for Updates khi mở panel**.
+Panel mặc định kiểm tra Release của `evolvestudiowork-gif/pr-track-2d` mỗi khi mở. Có thể đổi Repository hoặc tắt **Tự kiểm tra khi mở panel** trong mục **Updates**.
 
 Khi có phiên bản mới, panel hiện nút mở trang Release. Tải ZIP, đóng Premiere và chạy bộ cài để cài đè. **Hiện chưa tự tải, giải nén hoặc cài đặt bản cập nhật.**
 
@@ -123,14 +117,13 @@ Tracking hoạt động offline; kết nối mạng chỉ cần khi kiểm tra h
 - **Estimated là dự đoán**, có thể trượt khỏi vật thể. Chạy hết clip không đồng nghĩa với bám chính xác toàn bộ clip.
 - Clip offline, lỗi giải mã hoặc lỗi engine vẫn có thể làm lượt phân tích dừng.
 
-## Trạng thái kiểm thử và phát hành
+## Trạng thái
 
-- Bản **v0.5.1** đã đạt **70 kiểm thử tự động** và kiểm tra engine standalone trên Windows, Mac Apple Silicon và Mac Intel.
-- Engine Mac được build và kiểm thử native qua GitHub Actions. Chưa xác nhận trực tiếp toàn bộ workflow và giao diện trong Premiere.
 - Các gói hiện là **beta CEP chưa ký số**; bản Mac chưa có Developer ID/notarization.
+- Engine Mac được build và kiểm thử qua GitHub Actions; engine Windows được build và kiểm thử trên máy Windows. Giao diện trong Premiere được kiểm tra thủ công trước mỗi bản phát hành.
 - **Stop** hiện hủy lượt đang chạy, chưa giữ phần dừng giữa chừng để Apply.
 
-Các yêu cầu cài đặt và giới hạn chung được duy trì trong README này. [Release notes](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) tập trung vào tính năng mới, thay đổi và lỗi đã sửa của từng bản.
+Thay đổi của từng phiên bản: xem [CHANGELOG.md](CHANGELOG.md) hoặc [Releases](https://github.com/evolvestudiowork-gif/pr-track-2d/releases).
 
 ## Báo lỗi
 
