@@ -4,7 +4,7 @@ Có ZIP standalone native cho Apple Silicon (arm64) và Intel (x86_64) trong m�
 
 ## Bộ cài được build thế nào
 
-Workflow **Build macOS standalone** (`.github/workflows/build-macos.yml`, chạy tay trong tab Actions) build engine trên `macos-26` (Apple Silicon) và `macos-15-intel` (Intel), kiểm thử engine trên chính máy đó, rồi xuất ZIP thành Artifact để đính kèm vào Release. Quy trình phát hành: xem [GITHUB-RELEASES.md](GITHUB-RELEASES.md).
+Workflow **Build release assets** (`.github/workflows/build-release-assets.yml`, chạy tay trong tab Actions) build engine trên `macos-26` (Apple Silicon) và `macos-15-intel` (Intel), kiểm thử engine trên chính máy đó, rồi gắn ZIP vào Release. Quy trình phát hành: xem [GITHUB-RELEASES.md](GITHUB-RELEASES.md).
 
 ## Cài trên Mac
 

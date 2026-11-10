@@ -1,6 +1,6 @@
 # Phát hành PR Track 2D
 
-Mỗi bản phát hành gồm ba ZIP standalone (Windows, macOS arm64, macOS x86_64) trong cùng một GitHub Release.
+Mỗi bản phát hành gồm ba ZIP standalone (Windows, macOS arm64, macOS x86_64) trong cùng một GitHub Release. Cả ba được build trên GitHub, không cần máy Windows.
 
 ## Trong lúc phát triển
 
@@ -20,27 +20,20 @@ Mỗi bản phát hành gồm ba ZIP standalone (Windows, macOS arm64, macOS x86
 
    `npm version` cập nhật package.json, đồng bộ số phiên bản vào manifest, host.jsx, bridge.js, updates.js, tracker.py và mục Updates; đổi **Chưa phát hành** trong CHANGELOG.md thành `0.x.y` kèm ngày; rồi tạo commit và tag `v0.x.y`. Lệnh dừng lại nếu CHANGELOG chưa có nội dung.
 
-4. **ZIP macOS:** trên GitHub, **Actions → Build macOS standalone → Run workflow**. Khi xong, tải hai Artifact và giải nén để lấy `PR-Track-2D-0.x.y-macOS-arm64-Standalone.zip` và `...-macOS-x86_64-Standalone.zip`.
-5. **ZIP Windows:** trên máy Windows x64, trong checkout của tag:
-
-   ```sh
-   python -m pip install -r scripts/requirements-build.txt
-   python scripts/build_runtime.py
-   python scripts/verify_runtime.py
-   python scripts/package.py
-   ```
-
-   ZIP nằm trong `dist/`.
-
-6. GitHub → **Releases → Draft a new release**, chọn tag `v0.x.y`, tiêu đề `PR Track 2D v0.x.y`. Ghi chú phát hành lấy bằng:
+4. GitHub → **Releases → Draft a new release**, chọn tag `v0.x.y`, tiêu đề `PR Track 2D v0.x.y`. Ghi chú phát hành lấy bằng:
 
    ```sh
    node scripts/changelog.cjs notes
    ```
 
-   Upload ba ZIP, rồi **Publish release** (không chọn Pre-release).
+   Bấm **Save draft** (chưa Publish).
+
+5. **Actions → Build release assets → Run workflow**, nhập tag `v0.x.y`. Workflow build ZIP Windows, macOS arm64 và macOS x86_64 trên máy đúng hệ điều hành, chạy toàn bộ kiểm thử, rồi gắn ba ZIP cùng `SHA256SUMS.txt` vào Release của tag đó. Mất khoảng 10 phút.
+6. Mở Release nháp, kiểm tra đủ ba ZIP, rồi **Publish release** (không chọn Pre-release).
 
 Chỉ sau khi Publish, panel mới báo có bản mới.
+
+Workflow **Build macOS standalone** cũ vẫn còn để build riêng bản Mac thành Artifact khi cần thử nghiệm.
 
 ## Cách panel kiểm tra cập nhật
 

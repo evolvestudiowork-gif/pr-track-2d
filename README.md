@@ -1,130 +1,148 @@
+<div align="center">
+
 # PR Track 2D
 
-Plugin **Motion Tracking 2D** cho **Adobe Premiere Pro 2026–2027 trên Windows và macOS**, giúp gắn Text / Graphic theo chuyển động trong video.
+**Motion tracking 2D ngay trong Adobe Premiere Pro.**
+Khoanh một vùng trên video, bấm Track, rồi gắn Text hoặc Graphic chạy theo vật thể.
 
-[**Tải phiên bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Lịch sử cập nhật](https://github.com/evolvestudiowork-gif/pr-track-2d/releases) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
+[![Phiên bản mới nhất](https://img.shields.io/github/v/release/evolvestudiowork-gif/pr-track-2d?label=phi%C3%AAn%20b%E1%BA%A3n&color=378ef0)](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest)
+[![Lượt tải](https://img.shields.io/github/downloads/evolvestudiowork-gif/pr-track-2d/total?label=l%C6%B0%E1%BB%A3t%20t%E1%BA%A3i&color=4fb37a)](https://github.com/evolvestudiowork-gif/pr-track-2d/releases)
+![Premiere Pro 2026–2027](https://img.shields.io/badge/Premiere%20Pro-2026%E2%80%932027-9999ff)
+![Windows · macOS](https://img.shields.io/badge/Windows%20%C2%B7%20macOS-lightgrey)
 
-## Giao diện
+[**Tải bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Có gì mới](CHANGELOG.md) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
-Panel chia thành ba bước: **1 Source → 2 Track → 3 Apply**. Bước đang làm được tô màu, bước đã xong hiện dấu ✓. Rê chuột lên nút hoặc checkbox để xem giải thích. Màu nền và cỡ chữ theo giao diện Premiere, kể cả khi đổi độ sáng trong Preferences › Appearance.
-
-Reset Tracking xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc để khoanh lại. Source, Target, Channels, Smoothing, Motion Gain và Keyframe trên Timeline được giữ nguyên.
+</div>
 
 ## Tính năng
 
-- **Tracking hai chiều:** chọn vùng tại một Frame mốc, tự Track ngược về đầu và tiến đến cuối phần clip trên Timeline.
-- **Position / Scale / Rotation:** chọn riêng hoặc kết hợp bằng checkbox.
-- **Apply linh hoạt:** Graphic không cần dài bằng video; chỉ áp dụng vào phần giao với dữ liệu Tracking, tối thiểu 2 Frame.
-- **Continue Tracking:** khi mất bám, tiếp tục bằng dữ liệu dự đoán, đánh dấu **Estimated** và hiển thị vùng chọn màu vàng.
-- **Remove Tracking:** khôi phục các thuộc tính của lần Apply gần nhất trong phiên làm việc.
-- **Reset Tracking:** xóa vùng chọn và kết quả Track, trở về Frame mốc; giữ Source, Target và các thiết lập để khoanh lại ngay.
-- **Preview:** xem vùng Tracking, tiến độ, Confidence và kết quả bằng thanh trượt.
-- **Advanced:** Smoothing, Motion Gain và xuất dữ liệu JSON.
-- **GitHub Updates:** tự kiểm tra Release mới khi mở panel.
-- **Runtime tích hợp:** có sẵn cho Windows, Mac Apple Silicon và Mac Intel; không cần cài riêng Python, OpenCV hoặc NumPy. Video được xử lý trên máy.
+- **Track hai chiều từ một Frame bất kỳ.** Chọn vùng ở giữa clip, plugin tự Track ngược về đầu và tiến tới cuối.
+- **Position, Scale, Rotation.** Bật riêng từng thuộc tính hoặc kết hợp.
+- **Không mất dấu giữa chừng.** Khi vật thể bị che hay mờ, plugin dự đoán vị trí và đánh dấu các Frame đó là **Estimated** để bạn kiểm tra lại.
+- **Gỡ được.** **Remove Tracking** xóa Keyframe vừa Apply và trả Graphic về như cũ.
+- **Giao diện như panel gốc.** Ba bước Source → Track → Apply, màu và cỡ chữ theo Premiere.
+- **Chạy hoàn toàn trên máy.** Không cần cài Python hay OpenCV, không gửi video đi đâu.
 
-## Yêu cầu
+## Cài đặt
 
-- Windows 64-bit hoặc macOS Apple Silicon/Intel, Adobe Premiere Pro 2026 (26.x) hoặc 2027 (27.x), có CEP 12.
-- Engine Mac đã kiểm thử trên runner macOS 26 (Apple Silicon) và macOS 15 (Intel); Premiere/Gatekeeper trên máy Mac thực tế cần kiểm chứng riêng.
-- Video có tốc độ Frame cố định (CFR), pixel vuông, tốc độ phát 100%, không phát ngược.
-- Nếu video đã dùng speed ramp, Warp Stabilizer hoặc Scale to Frame Size, hãy xuất thành video trước khi Tracking.
+### 1. Tải đúng gói
 
-**Đây là bản beta CEP chưa ký số.** Máy mới cần cho phép extension CEP phát triển. Bộ cài chỉ kiểm tra thiết lập này và thông báo nếu chưa đáp ứng; không tự thay đổi registry.
+Vào [trang Release mới nhất](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest), mục **Assets**:
 
-## Tải và cài đặt
+| Máy của bạn | Tải file |
+| --- | --- |
+| Windows 64-bit | `PR-Track-2D-<phiên bản>-Windows-Standalone.zip` |
+| Mac Apple Silicon (M1, M2, M3, M4…) | `PR-Track-2D-<phiên bản>-macOS-arm64-Standalone.zip` |
+| Mac Intel | `PR-Track-2D-<phiên bản>-macOS-x86_64-Standalone.zip` |
 
-### Windows
+Không tải **Source code (zip)** — gói đó không có bộ cài.
 
-1. Mở [Latest Release](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest).
-2. Trong **Assets**, tải `PR-Track-2D-<version>-Windows-Standalone.zip`.
-3. Giải nén **toàn bộ** ZIP vào một thư mục.
-4. Đóng Premiere, chạy **Install-PRTrack.cmd**.
-5. Mở Premiere → **Window → Extensions → PR Track 2D**.
+### 2. Cho phép extension chưa ký số (chỉ làm một lần)
 
-Không chọn gói **Source code (zip)** hoặc **Source code (tar.gz)** mà GitHub tự tạo. Bộ cài standalone nằm trong ZIP được đính kèm riêng ở Assets.
+PR Track 2D đang ở dạng beta, chưa được Adobe ký số, nên Premiere cần được cho phép chạy extension loại này. Đóng Premiere rồi chạy lệnh sau:
 
-Không chạy bộ cài ngay bên trong ZIP và không tách file EXE khỏi thư mục runtime.
+<details>
+<summary><b>Windows</b> — mở <i>Command Prompt</i> và chạy</summary>
 
-### macOS
+```bat
+reg add "HKCU\Software\Adobe\CSXS.12" /v PlayerDebugMode /t REG_SZ /d 1 /f
+```
 
-Trong [Latest Release](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest), tải đúng gói theo máy:
+</details>
 
-- **Apple Silicon (M1/M2/M3/M4…):** `PR-Track-2D-<version>-macOS-arm64-Standalone.zip`.
-- **Intel:** `PR-Track-2D-<version>-macOS-x86_64-Standalone.zip`.
+<details>
+<summary><b>macOS</b> — mở <i>Terminal</i> và chạy</summary>
 
-Giải nén toàn bộ bằng Finder, đóng Premiere rồi mở **Install-PRTrack.command**. Không cần cài Python. CEP chạy qua Rosetta cần gói x86_64.
+```sh
+defaults write com.adobe.CSXS.12 PlayerDebugMode 1
+```
 
-Bản Mac chưa có Developer ID/notarization; macOS có thể chặn file tải từ Internet. Installer không gỡ quarantine hoặc tắt Gatekeeper, và không tự bật CEP development mode.
+</details>
 
-## Cách sử dụng
+Bộ cài chỉ kiểm tra thiết lập này, không tự thay đổi nó.
 
-### 1. Chọn Source và Frame mốc
+### 3. Chạy bộ cài
 
-- Chọn video trên Timeline. Có thể dùng nguyên clip hoặc cắt sẵn đoạn cần Track.
-- Đặt Playhead tại **bất kỳ Frame nào bên trong clip** có vật thể rõ.
-- Bấm **Use Selected Clip**.
-- Nếu đổi Playhead sau khi lấy Source, bấm **Update Frame** rồi khoanh lại vùng.
+1. Giải nén **toàn bộ** file ZIP vào một thư mục (không chạy thẳng bên trong ZIP).
+2. Đóng Premiere.
+3. Chạy **`Install-PRTrack.cmd`** (Windows) hoặc **`Install-PRTrack.command`** (macOS).
+4. Mở Premiere → **Window → Extensions → PR Track 2D**.
 
-### 2. Tracking
+Cài bản mới cũng làm y hệt; bản cũ được thay tự động.
 
-- Kéo chuột khoanh vùng có chi tiết rõ trong Preview; tránh lấy quá nhiều nền.
-- Chọn **Position**, **Scale**, **Rotation** hoặc kết hợp các thuộc tính cần dùng.
-- Chọn **Backward**, **Track Both** hoặc **Forward**. Track Both phân tích theo cả hai chiều từ Frame mốc.
+## Sử dụng
 
-Plugin phân tích từ Frame mốc đến cuối clip, rồi từ Frame mốc ngược về đầu clip. Kết quả được ghép theo đúng thứ tự Timeline và giới hạn trong phần clip đã cắt.
+**1 · Source**
+Chọn video trên Timeline, đặt Playhead ở một Frame thấy rõ vật thể, bấm **Use Selected Clip**.
 
-**Stop** hủy lượt đang chạy; hiện chưa giữ kết quả của lượt bị hủy để Apply.
+**2 · Track**
+Kéo chuột khoanh một vùng có nhiều chi tiết trên Preview. Chọn **Position / Scale / Rotation**, rồi bấm **Track Both** (hoặc **Backward** / **Forward** nếu chỉ cần một chiều). Kéo thanh trượt bên dưới Preview để xem lại; nút **Xem Frame Estimated** nhảy tới các Frame được dự đoán.
 
-### 3. Xem lại và Apply
+**3 · Apply**
+Tạo Text / Graphic và đặt nó đúng vị trí tại **Frame mốc**, chọn nó trên Timeline, bấm **Use Selected Graphic** rồi **Apply**. Phát lại để kiểm tra; không ưng thì bấm **Remove Tracking**.
 
-- Dùng thanh trượt để kiểm tra kết quả, đặc biệt các Frame **Estimated**.
-- Tạo hoặc chọn Text / Graphic trên Timeline.
-- Nếu Graphic phủ Frame mốc, đặt chữ tại **Frame mốc** trước khi Apply.
-- Nếu Graphic không phủ Frame mốc, đặt chữ tại **Frame đầu phần giao** giữa Graphic và đoạn Tracking.
-- Chọn Graphic, bấm **Use Selected Graphic**, rồi **Apply**.
+Muốn khoanh lại vùng khác: bấm **Reset** ở bước Track. Source, Graphic và các thiết lập được giữ nguyên.
 
-Graphic không cần dài bằng video. Phần giao với dữ liệu Tracking cần có ít nhất **2 Frame**.
+### Mẹo để Track tốt hơn
 
-Với Caption, chuyển sang Graphic trước khi Apply. Plugin di chuyển cả Graphic clip; các lớp bên trong cùng Graphic sẽ đi cùng nhau.
+- Khoanh vùng có góc cạnh, hoa văn hoặc chữ rõ nét; tránh vùng trơn hoặc lấy quá nhiều nền.
+- Vùng nhỏ vừa đủ bao vật thể thường bám tốt hơn vùng lớn.
+- Với Graphic ngắn hơn clip, đặt chữ ở Frame đầu tiên mà Graphic và đoạn đã Track trùng nhau.
+- Caption cần chuyển thành Graphic trước khi Apply.
 
-### 4. Remove Tracking
+## Giới hạn
 
-Bấm **Remove Tracking** để gỡ các Keyframe của lần Apply gần nhất và khôi phục giá trị ban đầu của các thuộc tính đã áp dụng.
+- Chỉ chuyển động 2D: chưa hỗ trợ Perspective, biến dạng hay 3D.
+- Video cần tốc độ Frame cố định, pixel vuông, tốc độ phát 100%. Clip đã dùng speed ramp, Warp Stabilizer hoặc Scale to Frame Size cần xuất thành video trước.
+- Bật **Scale** cần Graphic có **Uniform Scale**. Thuộc tính được chọn để Apply phải chưa có Keyframe.
+- Scale/Rotation xoay quanh **Anchor Point của Graphic**, không quanh điểm được Track như khi Parent vào Null trong After Effects.
+- **Stop** hủy lượt Track đang chạy; phần đã chạy chưa dùng để Apply được.
+- **Remove Tracking** chỉ nhớ lần Apply gần nhất trong lúc panel còn mở.
 
-Remove Tracking chỉ nhớ lần Apply gần nhất trong phiên hiện tại. Nếu các Keyframe đó đã được chỉnh sửa thủ công, plugin sẽ từ chối tự gỡ để bảo vệ thay đổi.
+## Câu hỏi thường gặp
 
-### 5. Reset Tracking khi cần Track lại
+<details>
+<summary><b>Không thấy PR Track 2D trong Window → Extensions</b></summary>
 
-Bấm **Reset** ở bước Track để xóa vùng chọn và kết quả Track, đưa Preview về Frame mốc rồi khoanh lại ngay trên Source đang dùng. Không cần chọn lại video. Nếu đang Tracking, bấm **Stop** trước khi Reset.
+Kiểm tra lại bước 2 (cho phép extension chưa ký số), rồi khởi động lại Premiere. PR Track 2D hỗ trợ Premiere Pro 2026 (26.x) và 2027 (27.x).
 
-Reset Tracking giữ nguyên Source, Target, Channels, Smoothing, Motion Gain và Keyframe đã Apply trên Timeline; vẫn có thể **Remove Tracking** cho lần Apply gần nhất. Cấu hình Python và Updates được giữ nguyên.
+</details>
 
-## Kiểm tra cập nhật
+<details>
+<summary><b>macOS báo không mở được bộ cài hoặc engine</b></summary>
 
-Panel mặc định kiểm tra Release của `evolvestudiowork-gif/pr-track-2d` mỗi khi mở. Có thể đổi Repository hoặc tắt **Tự kiểm tra khi mở panel** trong mục **Updates**.
+Bản Mac chưa được Apple công chứng (notarization). Mở <b>System Settings → Privacy & Security</b> và chọn <b>Open Anyway</b> cho file bị chặn. Đảm bảo đã tải đúng gói arm64 hay x86_64 theo máy.
 
-Khi có phiên bản mới, panel hiện nút mở trang Release. Tải ZIP, đóng Premiere và chạy bộ cài để cài đè. **Hiện chưa tự tải, giải nén hoặc cài đặt bản cập nhật.**
+</details>
 
-Tracking hoạt động offline; kết nối mạng chỉ cần khi kiểm tra hoặc tải bản cập nhật.
+<details>
+<summary><b>Vùng chọn chạy lệch khỏi vật thể</b></summary>
 
-## Giới hạn cần biết
+Xem các Frame <b>Estimated</b> (khung màu vàng) — đó là vị trí dự đoán khi mất dấu. Thử khoanh vùng nhỏ hơn, rõ chi tiết hơn, hoặc chọn Frame mốc ở đoạn vật thể rõ nhất rồi Track lại.
 
-- Hỗ trợ chuyển động 2D, chưa hỗ trợ Perspective, biến dạng hoặc 3D.
-- Scale cần Graphic bật **Uniform Scale**; video nguồn cần Scale X/Y bằng nhau khi áp dụng Scale/Rotation.
-- Các thuộc tính được chọn để Apply phải chưa có Animation.
-- Scale/Rotation áp dụng quanh **Anchor Point của Graphic**; offset Position không xoay quanh điểm Tracking như khi Parent layer vào Null trong AE.
-- **Estimated là dự đoán**, có thể trượt khỏi vật thể. Chạy hết clip không đồng nghĩa với bám chính xác toàn bộ clip.
-- Clip offline, lỗi giải mã hoặc lỗi engine vẫn có thể làm lượt phân tích dừng.
+</details>
 
-## Trạng thái
+<details>
+<summary><b>Làm sao cập nhật?</b></summary>
 
-- Các gói hiện là **beta CEP chưa ký số**; bản Mac chưa có Developer ID/notarization.
-- Engine Mac được build và kiểm thử qua GitHub Actions; engine Windows được build và kiểm thử trên máy Windows. Giao diện trong Premiere được kiểm tra thủ công trước mỗi bản phát hành.
-- **Stop** hiện hủy lượt đang chạy, chưa giữ phần dừng giữa chừng để Apply.
+Panel tự kiểm tra bản mới mỗi lần mở (mục <b>Updates</b>). Khi có bản mới, bấm nút để mở trang Release, tải ZIP và chạy lại bộ cài. Tracking không cần mạng; mạng chỉ dùng để kiểm tra cập nhật.
 
-Thay đổi của từng phiên bản: xem [CHANGELOG.md](CHANGELOG.md) hoặc [Releases](https://github.com/evolvestudiowork-gif/pr-track-2d/releases).
+</details>
 
-## Báo lỗi
+## Báo lỗi và góp ý
 
-Tạo [Issue](https://github.com/evolvestudiowork-gif/pr-track-2d/issues) kèm phiên bản plugin, Premiere, nội dung lỗi và thao tác trước khi lỗi xảy ra. Nếu thuận tiện, bổ sung ảnh vùng khoanh hoặc đoạn video mẫu ngắn.
+Tạo [Issue](https://github.com/evolvestudiowork-gif/pr-track-2d/issues) kèm:
+
+- phiên bản PR Track 2D (mục **Updates**) và Premiere,
+- Windows hay macOS,
+- thông báo lỗi và các bước dẫn tới lỗi,
+- nếu được: ảnh vùng đã khoanh hoặc một đoạn video ngắn.
+
+## Dành cho người phát triển
+
+Panel CEP (HTML/JS + ExtendScript) gọi một engine Python/OpenCV đóng gói sẵn. Cách build, kiểm thử và phát hành: xem [GITHUB-RELEASES.md](GITHUB-RELEASES.md) và [README-macOS.md](README-macOS.md).
+
+```sh
+npm ci
+npm run check && npm run lint && npm test && npm run test:engine
+```
