@@ -1,6 +1,6 @@
 (function (root) {
   'use strict';
-  var VERSION = '0.5.2';
+  var VERSION = '0.6.0';
   var DEFAULT_REPO = 'evolvestudiowork-gif/pr-track-2d';
   function repository(value) {
     var repo = String(value || '')

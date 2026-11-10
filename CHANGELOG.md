@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.0] - 2026-11-10
+
 ### Thay đổi
 
 - Hỗ trợ Premiere Pro 2027 (27.x) bên cạnh 2026.
@@ -47,7 +49,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.5.2...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.0
 [0.5.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.2
 [0.5.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.1
 [0.5.0]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.0

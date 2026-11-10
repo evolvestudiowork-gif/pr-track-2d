@@ -30,7 +30,7 @@
     // Load this installed version once; leave an up-to-date namespace/session intact.
     var hostPath = JSON.stringify(root.replace(/\\/g, '/') + '/jsx/host.jsx');
     var script =
-      '(function(){if(typeof PRTrack === "undefined" || PRTrack.version !== "0.5.2"){' +
+      '(function(){if(typeof PRTrack === "undefined" || PRTrack.version !== "0.6.0"){' +
       '$.evalFile(new File(' +
       hostPath +
       '));}return PRTrack.' +
