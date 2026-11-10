@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.1] - 2026-11-10
+
 ### Sửa lỗi
 
 - Bộ cài Windows báo "running scripts is disabled on this system" trên máy chặn chạy script PowerShell (Execution Policy). `Install-PRTrack.cmd` nay chạy bộ cài với `-ExecutionPolicy Bypass`, chỉ cho riêng lần chạy đó, không đổi thiết lập của máy.
@@ -53,7 +55,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.0...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.1
 [0.6.0]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.0
 [0.5.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.2
 [0.5.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.1
