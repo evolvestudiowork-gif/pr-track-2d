@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Sửa lỗi
+
+- Bộ cài Windows báo "running scripts is disabled on this system" trên máy chặn chạy script PowerShell (Execution Policy). `Install-PRTrack.cmd` nay chạy bộ cài với `-ExecutionPolicy Bypass`, chỉ cho riêng lần chạy đó, không đổi thiết lập của máy.
+
 ## [0.6.0] - 2026-11-10
 
 ### Thay đổi
