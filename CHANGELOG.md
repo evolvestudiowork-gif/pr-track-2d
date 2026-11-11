@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.3] - 2026-11-11
+
 ### Thay đổi
 
 - Dùng được video quay dọc bằng điện thoại. Trước đây plugin báo "Video có metadata xoay" và bắt render lại; nay plugin đọc video đúng chiều như Premiere hiển thị (xoay 90°, 180°, 270°).
@@ -66,7 +68,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.2...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.3
 [0.6.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.2
 [0.6.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.1
 [0.6.0]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.0
