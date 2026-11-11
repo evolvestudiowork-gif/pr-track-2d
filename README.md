@@ -12,6 +12,8 @@ Khoanh một vùng trên video, bấm Track, rồi gắn Text hoặc Graphic ch�
 
 [**Tải bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Có gì mới](CHANGELOG.md) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
+<img src="docs/panel.jpg" width="320" alt="Panel PR Track 2D trong Premiere Pro: ba bước Source, Track và Apply">
+
 </div>
 
 ## Tính năng

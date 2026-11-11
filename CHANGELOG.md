@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Sửa lỗi
+
+- Khi phóng to panel (phím `` ` ``), khung Preview giãn theo chiều ngang và đẩy các bước bên dưới ra khỏi màn hình. Nay Preview cao tối đa nửa panel và giữ đúng tỉ lệ khung hình; video dọc cũng không còn chiếm hết panel.
+
 ## [0.6.2] - 2026-11-11
 
 ### Sửa lỗi
