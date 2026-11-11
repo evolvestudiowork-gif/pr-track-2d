@@ -79,7 +79,7 @@ Chọn video trên Timeline, đặt Playhead ở một Frame thấy rõ vật th
 Kéo chuột khoanh một vùng có nhiều chi tiết trên Preview. Chọn **Position / Scale / Rotation**, rồi bấm **Track Both** (hoặc **Backward** / **Forward** nếu chỉ cần một chiều). Kéo thanh trượt bên dưới Preview để xem lại; nút **Xem Frame Estimated** nhảy tới các Frame được dự đoán.
 
 **3 · Apply**
-Tạo Text / Graphic và đặt nó đúng vị trí tại **Frame mốc**, chọn nó trên Timeline, bấm **Use Selected Graphic** rồi **Apply**. Phát lại để kiểm tra; không ưng thì bấm **Remove Tracking**.
+Tạo Text / Graphic, đặt Playhead ở một Frame bất kỳ trong đoạn đã Track rồi đặt chữ vào đúng chỗ trên vật thể. **Giữ nguyên Playhead ở Frame đó**, chọn Graphic trên Timeline, bấm **Use Selected Graphic** rồi **Apply**: Graphic giữ đúng vị trí tại Frame đang đứng và chạy theo vật thể ở các Frame còn lại. Phát lại để kiểm tra; không ưng thì bấm **Remove Tracking**.
 
 Muốn khoanh lại vùng khác: bấm **Reset** ở bước Track. Source, Graphic và các thiết lập được giữ nguyên.
 
@@ -87,7 +87,7 @@ Muốn khoanh lại vùng khác: bấm **Reset** ở bước Track. Source, Grap
 
 - Khoanh vùng có góc cạnh, hoa văn hoặc chữ rõ nét; tránh vùng trơn hoặc lấy quá nhiều nền.
 - Vùng nhỏ vừa đủ bao vật thể thường bám tốt hơn vùng lớn.
-- Với Graphic ngắn hơn clip, đặt chữ ở Frame đầu tiên mà Graphic và đoạn đã Track trùng nhau.
+- Nếu Playhead nằm ngoài đoạn Graphic và đoạn đã Track trùng nhau, plugin lấy Frame mốc làm chuẩn (hoặc Frame đầu tiên trùng nhau nếu Graphic không phủ Frame mốc).
 - Caption cần chuyển thành Graphic trước khi Apply.
 
 ## Giới hạn

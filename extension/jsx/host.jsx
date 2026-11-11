@@ -320,6 +320,12 @@ var PRTrack = (function () {
         return { startOffset: 0, seedOffset: offset, duration: frames / info.fps };
       });
     },
+    playhead: function () {
+      return guard(function () {
+        var s = sequence();
+        return { sequenceId: String(s.sequenceID), seconds: s.getPlayerPosition().seconds };
+      });
+    },
     target: function (request) {
       return guard(function () {
         var s = sequence();

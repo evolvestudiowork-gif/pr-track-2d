@@ -315,10 +315,14 @@
       sequenceId: state.target.sequenceId
     });
     if (target.sequenceId !== state.source.sequenceId) throw new Error(M.targetOtherSequence);
+    // The Graphic keeps its current position at the frame under the Playhead,
+    // which is where the user placed it.
+    var playhead = await bridge.call('playhead');
     var keys = mapping.createKeys(state.result, state.source, target, {
       smoothing: Number($('smooth').value),
       gain: Number($('gain').value),
       startOffset: state.startOffset,
+      referenceTime: playhead.sequenceId === target.sequenceId ? playhead.seconds : undefined,
       channels: channels(),
       transform: transformChannels()
     });

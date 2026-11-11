@@ -36,6 +36,22 @@
       };
     });
   }
+  /** The sample shown at sequence time `at`, or null when `at` is outside them. */
+  function sampleAt(samples, at, start) {
+    if (typeof at !== 'number' || !Number.isFinite(at)) return null;
+    for (var i = samples.length - 1; i >= 0; i--) {
+      if (start + samples[i].t <= at + 1e-6) {
+        var next = samples[i + 1];
+        var frame = next
+          ? next.t - samples[i].t
+          : samples.length > 1
+            ? samples[i].t - samples[i - 1].t
+            : 0;
+        return at < start + samples[i].t + frame - 1e-6 ? samples[i] : null;
+      }
+    }
+    return null;
+  }
   function createKeys(result, source, target, options) {
     if (!result.complete || !result.points || result.points.length < 2)
       throw new Error('Cần bám thành công toàn bộ đoạn đã chọn.');
@@ -94,8 +110,14 @@
       throw new Error(
         'Graphic cần giao với đoạn Tracking ít nhất 2 Frame. Đặt Graphic trong vùng đã Track.'
       );
+    // Reference sample: the frame at which the Graphic's current position is
+    // taken to sit on the tracked point. Prefer the Playhead at Apply (where
+    // the user just placed the Graphic), then the seed frame, then the first
+    // overlapping sample.
     var reference = filtered[0];
-    if (result.seedIndex !== undefined) {
+    var playheadSample = sampleAt(filtered, options.referenceTime, start);
+    if (playheadSample) reference = playheadSample;
+    else if (result.seedIndex !== undefined) {
       if (
         !Number.isInteger(result.seedIndex) ||
         result.seedIndex < 0 ||

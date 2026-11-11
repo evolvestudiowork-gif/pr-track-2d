@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Sửa lỗi
+
+- Graphic bị nhảy khỏi vị trí đã đặt sau khi Apply nếu Playhead đã dời khỏi Frame mốc. Nay Graphic giữ đúng vị trí tại Frame đang đứng (Playhead) lúc bấm Apply; nếu Playhead nằm ngoài đoạn đã Track thì vẫn dùng Frame mốc như trước.
+
 ## [0.6.1] - 2026-11-10
 
 ### Sửa lỗi

@@ -200,3 +200,26 @@ test('bidirectional Apply preserves seed pose, and rebases if graphic excludes s
   assert.equal(later[0].scale, 80);
   assert.equal(later[0].rotation, 25);
 });
+
+test('Graphic keeps its position at the Playhead frame, not the seed frame', () => {
+  // Seed at sample 0; the user moved the Playhead to sample 2 and placed the Graphic there.
+  const track = {
+    complete: true,
+    seedIndex: 0,
+    points: [0, 1, 2, 3].map((i) => ({ t: i / 30, x: 100 + 10 * i, y: 50 }))
+  };
+  const at = (seconds) =>
+    mapping.createKeys(
+      track,
+      { ...source, start: 0, motion: { scaleX: 100, scaleY: 100, rotation: 0 } },
+      { ...target, start: 0, end: 1, inPoint: 0 },
+      { ...options, startOffset: 0, referenceTime: seconds }
+    );
+  const keys = at(2 / 30 + 0.01);
+  assert.deepEqual(keys[2].value, target.position);
+  assert.equal(keys[0].value[0], 0.4 - 20 / 1920);
+  // Playhead outside the tracked frames, or unknown: fall back to the seed frame.
+  assert.deepEqual(at(5)[0].value, target.position);
+  assert.deepEqual(at(undefined)[0].value, target.position);
+  assert.deepEqual(at(-1)[0].value, target.position);
+});

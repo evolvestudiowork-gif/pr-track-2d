@@ -1,4 +1,4 @@
-PR TRACK 2D 0.5.2 — PREMIERE PRO 2026–2027 / WINDOWS
+PR TRACK 2D — PREMIERE PRO 2026–2027 / WINDOWS
 
 1. Giải nén TOÀN BỘ ZIP, đóng Premiere, chạy Install-PRTrack.cmd.
 2. Mở Window > Extensions > PR Track 2D.
@@ -7,8 +7,7 @@ PR TRACK 2D 0.5.2 — PREMIERE PRO 2026–2027 / WINDOWS
 5. Chọn Backward, Track Both hoặc Forward. Track Both tự Track từ mốc về đầu và cuối phần clip trên Timeline.
 6. Xem lại kết quả, chọn Graphic trên Timeline > Use Selected Graphic > Apply.
 
-Nếu Graphic phủ Frame mốc: đặt chữ tại Frame mốc trước Apply.
-Nếu Graphic không phủ mốc: đặt chữ tại Frame đầu phần giao trước Apply.
+Đặt chữ đúng chỗ tại Frame đang đứng và giữ nguyên Playhead ở đó khi bấm Apply.
 Mất bám vẫn tiếp tục bằng Estimated (màu vàng); cần xem lại vì có thể trượt.
 Stop hủy lượt đang chạy. Remove Tracking khôi phục lần Apply gần nhất trong phiên.
 Đổi Playhead thì bấm Update Frame và khoanh lại.

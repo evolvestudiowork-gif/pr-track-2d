@@ -18,7 +18,7 @@
 
   function call(method, arg) {
     if (!isHost) return Promise.reject(new Error(M.openInPremiere));
-    if (!/^(source|range|target|begin|chunk|finish|abort|remove)$/.test(method))
+    if (!/^(source|range|playhead|target|begin|chunk|finish|abort|remove)$/.test(method))
       return Promise.reject(new Error(M.invalidHostCommand));
     var payload =
       arg === undefined

@@ -418,6 +418,12 @@ test('range covers trimmed clip and keeps playhead as seed even near clip end', 
   assert.ok(last.data.seedOffset < 300);
 });
 
+test('playhead reports the active sequence and Playhead time', () => {
+  const h = setup();
+  h.run('seq.getPlayerPosition=function(){return {seconds:12.5};};');
+  assert.deepEqual(h.call('playhead').data, { sequenceId: 'sequence', seconds: 12.5 });
+});
+
 test('short graphic overlap maps through real host transaction and Reset', () => {
   const h = setup();
   h.run('dst.start.seconds=12;dst.end.seconds=14;dst.inPoint.seconds=5;dst.outPoint.seconds=7;');
