@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.2] - 2026-11-11
+
 ### Sửa lỗi
 
 - Graphic bị nhảy khỏi vị trí đã đặt sau khi Apply nếu Playhead đã dời khỏi Frame mốc. Nay Graphic giữ đúng vị trí tại Frame đang đứng (Playhead) lúc bấm Apply; nếu Playhead nằm ngoài đoạn đã Track thì vẫn dùng Frame mốc như trước.
@@ -59,7 +61,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.1...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.2
 [0.6.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.1
 [0.6.0]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.0
 [0.5.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.5.2
