@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Thay đổi
+
+- Dùng được video quay dọc bằng điện thoại. Trước đây plugin báo "Video có metadata xoay" và bắt render lại; nay plugin đọc video đúng chiều như Premiere hiển thị (xoay 90°, 180°, 270°).
+
 ## [0.6.2] - 2026-11-11
 
 ### Sửa lỗi

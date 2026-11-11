@@ -55,15 +55,33 @@ class Video:
             number(self.fps, "FPS nguồn", 1, 240)
             if min(self.count, self.width, self.height) <= 0:
                 raise ValueError("Video không có thông tin số khung hình hợp lệ.")
-            if rotation not in (0, 360):
-                raise ValueError("Video có metadata xoay. Hãy render thành video đúng chiều trước.")
             if sar_d > 0 and sar_n > 0 and abs(sar_n / sar_d - 1) > 0.001:
                 raise ValueError("Bản này cần footage pixel vuông (pixel aspect ratio = 1).")
+            if rotation % 360:
+                self._upright(rotation)
         except Exception:
             self.cap.release()
             raise
         self.index = -1
         self.frame = None
+
+    def _upright(self, rotation):
+        """Phone clips store portrait video as landscape frames plus a rotation
+        tag. Premiere shows them upright, so frames must be decoded upright too,
+        or tracked coordinates land in the wrong place."""
+        if rotation % 90:
+            raise ValueError("Video có metadata xoay không vuông góc. Hãy render lại video.")
+        self.cap.set(cv2.CAP_PROP_ORIENTATION_AUTO, 1)
+        if self.cap.get(cv2.CAP_PROP_ORIENTATION_AUTO) != 1:
+            raise ValueError(
+                "Không xoay được video theo metadata. Hãy render thành video đúng chiều."
+            )
+        ok, first = self.cap.read()
+        if not ok:
+            raise ValueError("Không giải mã được khung hình đầu tiên.")
+        # Size of the upright frame, whatever the backend reports.
+        self.height, self.width = first.shape[:2]
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def close(self):
         self.cap.release()

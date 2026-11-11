@@ -400,3 +400,75 @@ class TrackerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FakeCapture:
+    """VideoCapture stand-in for a phone clip: landscape frames plus a rotation tag."""
+
+    def __init__(self, rotation, honours_auto=True):
+        self.props = {
+            cv2.CAP_PROP_FPS: 30.0,
+            cv2.CAP_PROP_FRAME_COUNT: 10.0,
+            cv2.CAP_PROP_FRAME_WIDTH: 1920.0,
+            cv2.CAP_PROP_FRAME_HEIGHT: 1080.0,
+            cv2.CAP_PROP_ORIENTATION_META: float(rotation),
+            cv2.CAP_PROP_ORIENTATION_AUTO: 0.0,
+            cv2.CAP_PROP_SAR_NUM: 1.0,
+            cv2.CAP_PROP_SAR_DEN: 1.0,
+            cv2.CAP_PROP_POS_FRAMES: 0.0,
+        }
+        self.honours_auto = honours_auto
+        self.released = False
+
+    def isOpened(self):
+        return True
+
+    def get(self, prop):
+        return self.props[prop]
+
+    def set(self, prop, value):
+        if prop != cv2.CAP_PROP_ORIENTATION_AUTO or self.honours_auto:
+            self.props[prop] = float(value)
+        return True
+
+    def read(self):
+        upright = (
+            self.props[cv2.CAP_PROP_ORIENTATION_AUTO]
+            and self.props[cv2.CAP_PROP_ORIENTATION_META] % 180
+        )
+        self.props[cv2.CAP_PROP_POS_FRAMES] += 1
+        return True, np.zeros((1920, 1080, 3) if upright else (1080, 1920, 3), np.uint8)
+
+    def release(self):
+        self.released = True
+
+
+class PhoneVideoTests(unittest.TestCase):
+    def open(self, capture):
+        original = tracker.cv2.VideoCapture
+        tracker.cv2.VideoCapture = lambda path: capture
+        try:
+            return tracker.Video("phone.mov")
+        finally:
+            tracker.cv2.VideoCapture = original
+
+    def test_portrait_phone_clip_is_decoded_upright(self):
+        for rotation in (90, -90, 270):
+            video = self.open(FakeCapture(rotation))
+            self.assertEqual((video.width, video.height), (1080, 1920))
+            self.assertEqual(video.cap.get(cv2.CAP_PROP_POS_FRAMES), 0)
+            self.assertEqual(video.metadata()["width"], 1080)
+
+    def test_upside_down_clip_keeps_its_size(self):
+        video = self.open(FakeCapture(180))
+        self.assertEqual((video.width, video.height), (1920, 1080))
+
+    def test_rotation_is_rejected_when_backend_cannot_rotate(self):
+        capture = FakeCapture(90, honours_auto=False)
+        with self.assertRaisesRegex(ValueError, "Không xoay được"):
+            self.open(capture)
+        self.assertTrue(capture.released)
+
+    def test_non_right_angle_rotation_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "không vuông góc"):
+            self.open(FakeCapture(45))
