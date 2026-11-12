@@ -63,7 +63,8 @@
     preview:
       'Đây là giao diện xem trước. Cài plugin rồi mở Window > Extensions > PR Track 2D trong Premiere để Track.',
     start: 'Chọn video trên Timeline rồi bấm Use Selected Clip.',
-    readingSource: 'Đang đọc clip được chọn từ Premiere…',
+    readingSource:
+      'Đang đọc clip được chọn từ Premiere… Nested Sequence sẽ được render trước, có thể mất một lúc.',
     readingFrame: 'Đang đọc Frame nguồn…',
     frameReady: function (seconds) {
       return (

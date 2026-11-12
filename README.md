@@ -91,6 +91,7 @@ Muốn khoanh lại vùng khác: bấm **Reset** ở bước Track. Source, Grap
 - Vùng nhỏ vừa đủ bao vật thể thường bám tốt hơn vùng lớn.
 - Nếu Playhead nằm ngoài đoạn Graphic và đoạn đã Track trùng nhau, plugin lấy Frame mốc làm chuẩn (hoặc Frame đầu tiên trùng nhau nếu Graphic không phủ Frame mốc).
 - Caption cần chuyển thành Graphic trước khi Apply.
+- Nested Sequence dùng làm Source được: plugin tự render nest ra file tạm khi bấm **Use Selected Clip** (nest dài sẽ mất một lúc). Sửa nội dung trong nest thì bấm **Use Selected Clip** lại.
 - Video quay dọc bằng điện thoại dùng trực tiếp được. Nếu plugin báo codec không seek chính xác (điện thoại hay quay frame rate thay đổi), xuất lại clip với frame rate cố định rồi Track.
 
 ## Giới hạn

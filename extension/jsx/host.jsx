@@ -135,13 +135,75 @@ var PRTrack = (function () {
       outPoint: clip.outPoint.seconds
     };
   }
+  // A Nested Sequence has no media file for the engine to read, so it is
+  // rendered once to an intermediate at the nest's own size and frame rate.
+  var NEST_PRESETS = [
+    'Match Source - Apple ProRes 422 LT.epr',
+    'Match Source - GoPro CineForm YUV 10-bit.epr'
+  ];
+  var PRESET_FOLDERS = [
+    '/Contents/Settings/EncoderPresets/ConsolidateAndTranscode/', // macOS app bundle
+    '/Settings/EncoderPresets/ConsolidateAndTranscode/', // Windows install folder
+    '/Contents/Settings/IngestPresets/Transcode/',
+    '/Settings/IngestPresets/Transcode/'
+  ];
+  function isNest(clip) {
+    return !!clip.projectItem && !!clip.projectItem.isSequence();
+  }
+  function nestedSequence(item) {
+    var all = app.project.sequences;
+    for (var i = 0; i < all.numSequences; i++)
+      if (all[i].projectItem && all[i].projectItem.nodeId === item.nodeId) return all[i];
+    fail('Không tìm thấy Nested Sequence của clip này trong Project.');
+  }
+  function nestRenderPath(nest) {
+    return (
+      Folder.temp.fsName +
+      '/PR Track 2D/nest-' +
+      String(nest.sequenceID).replace(/[^\w\-]/g, '_') +
+      '.mov'
+    );
+  }
+  function nestPreset() {
+    var root = Folder.appPackage.fsName;
+    for (var p = 0; p < NEST_PRESETS.length; p++)
+      for (var f = 0; f < PRESET_FOLDERS.length; f++) {
+        var preset = new File(root + PRESET_FOLDERS[f] + NEST_PRESETS[p]);
+        if (preset.exists) return preset.fsName;
+      }
+    fail(
+      'Không tìm thấy preset của Premiere để render Nested Sequence. ' +
+        'Hãy chuột phải Nested Sequence > Render and Replace rồi chọn lại.'
+    );
+  }
+  function renderNest(clip) {
+    var nest = nestedSequence(clip.projectItem),
+      out = new File(nestRenderPath(nest));
+    if (!out.parent.exists && !out.parent.create())
+      fail('Không tạo được thư mục tạm để render Nested Sequence.');
+    if (out.exists && !out.remove()) fail('Không ghi đè được bản render cũ của Nested Sequence.');
+    var result = nest.exportAsMediaDirect(out.fsName, nestPreset(), 0); // 0: entire sequence
+    out = new File(out.fsName);
+    if (!out.exists || !(out.length > 0))
+      fail(
+        'Render Nested Sequence không thành công' +
+          (result ? ' (' + result + ')' : '') +
+          '. Hãy chuột phải Nested Sequence > Render and Replace rồi chọn lại.'
+      );
+  }
   function sourceInfo(clip, s) {
     normalSpeed(clip);
-    if (!clip.projectItem || clip.projectItem.isSequence())
-      fail('Hãy chọn video gốc. Chưa hỗ trợ Nested Sequence làm Source.');
-    var path = clip.projectItem.getMediaPath();
+    if (!clip.projectItem) fail('Hãy chọn một video trên Timeline.');
+    var nested = isNest(clip),
+      path = nested
+        ? nestRenderPath(nestedSequence(clip.projectItem))
+        : clip.projectItem.getMediaPath();
     if (!path || !new File(path).exists)
-      fail('Không tìm thấy video nguồn. Hãy kiểm tra liên kết tệp trong Premiere.');
+      fail(
+        nested
+          ? 'Chưa có bản render của Nested Sequence. Hãy bấm Use Selected Clip lại.'
+          : 'Không tìm thấy video nguồn. Hãy kiểm tra liên kết tệp trong Premiere.'
+      );
     var m = motionParams(clip);
     if (anyVarying([m.position, m.scale, m.scaleWidth, m.uniformScale, m.rotation, m.anchorPoint]))
       fail('Motion của video nguồn đã có chuyển động. Hãy xuất thành video trước khi Track.');
@@ -160,6 +222,7 @@ var PRTrack = (function () {
     var info = timing(clip, s);
     info.name = clip.name;
     info.path = path;
+    info.nested = nested;
     info.width = Number(s.frameSizeHorizontal);
     info.height = Number(s.frameSizeVertical);
     info.fps = TICKS_PER_SECOND / Number(s.timebase);
@@ -297,8 +360,13 @@ var PRTrack = (function () {
     version: '0.6.3',
     source: function () {
       return guard(function () {
-        var s = sequence();
-        return sourceInfo(selectedVideo(s), s);
+        var s = sequence(),
+          clip = selectedVideo(s);
+        if (isNest(clip)) {
+          normalSpeed(clip);
+          renderNest(clip);
+        }
+        return sourceInfo(clip, s);
       });
     },
     range: function (request) {

@@ -483,3 +483,68 @@ test('unrecognised Motion layout is rejected instead of writing to the wrong par
   assert.equal(result.ok, false);
   assert.match(result.error, /cấu trúc Motion/);
 });
+
+function nestSetup({ presets = ['ProRes'], renders = true } = {}) {
+  const h = setup();
+  h.run(`
+    var disk = {}, exports = [];
+    var appPackage = '/Apps/Premiere.app';
+    var presetFiles = ${JSON.stringify(presets)}.map(function (name) {
+      return appPackage + '/Contents/Settings/EncoderPresets/ConsolidateAndTranscode/' +
+        (name === 'ProRes' ? 'Match Source - Apple ProRes 422 LT.epr' : name);
+    });
+    File = function (p) {
+      this.fsName = p;
+      this.exists = presetFiles.indexOf(p) >= 0 || !!disk[p];
+      this.length = disk[p] || 0;
+      this.parent = { exists: true, create: function () { return true; } };
+      this.remove = function () { delete disk[p]; return true; };
+    };
+    Folder = { temp: { fsName: '/tmp' }, appPackage: { fsName: appPackage } };
+    var nestItem = { nodeId: 'nest-item', isSequence: function () { return true; } };
+    var nestSeq = { sequenceID: 'nest:1', projectItem: nestItem,
+      exportAsMediaDirect: function (out, preset, area) {
+        exports.push([out, preset, area]);
+        if (${renders}) disk[out] = 1024;
+        return 'No Error';
+      } };
+    app.project.sequences = { numSequences: 2, 0: seq, 1: nestSeq };
+    seq.projectItem = { nodeId: 'parent-item' };
+    src.projectItem = nestItem;
+    selected = src;
+  `);
+  return h;
+}
+
+test('Nested Sequence Source is rendered with a Match Source preset and tracked from the render', () => {
+  const h = nestSetup();
+  const result = h.call('source');
+  assert.equal(result.ok, true, result.error);
+  assert.equal(result.data.path, '/tmp/PR Track 2D/nest-nest_1.mov');
+  assert.equal(result.data.nested, true);
+  assert.deepEqual(JSON.parse(h.run('JSON.stringify(exports)')), [
+    [
+      '/tmp/PR Track 2D/nest-nest_1.mov',
+      '/Apps/Premiere.app/Contents/Settings/EncoderPresets/ConsolidateAndTranscode/Match Source - Apple ProRes 422 LT.epr',
+      0
+    ]
+  ]);
+  // Later checks reuse the render instead of exporting again.
+  h.run('seq.getPlayerPosition=function(){return {seconds:12};};');
+  assert.equal(h.call('range', { source: result.data }).ok, true);
+  assert.equal(h.run('exports.length'), 1);
+});
+
+test('Nested Sequence falls back to CineForm and explains when no preset or render is available', () => {
+  const cineform = nestSetup({ presets: ['Match Source - GoPro CineForm YUV 10-bit.epr'] });
+  assert.match(cineform.run('PRTrack.source()'), /"ok":true/);
+  assert.match(cineform.run('exports[0][1]'), /CineForm/);
+
+  const noPreset = nestSetup({ presets: [] }).call('source');
+  assert.equal(noPreset.ok, false);
+  assert.match(noPreset.error, /Render and Replace/);
+
+  const failed = nestSetup({ renders: false }).call('source');
+  assert.equal(failed.ok, false);
+  assert.match(failed.error, /Render Nested Sequence không thành công \(No Error\)/);
+});

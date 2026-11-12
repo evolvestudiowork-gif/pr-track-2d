@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Thay đổi
+
+- Dùng được Nested Sequence làm Source. Khi bấm **Use Selected Clip**, plugin render Nested Sequence ra một file tạm (ProRes, cùng kích thước và frame rate với nest) rồi Track trên file đó. Sửa nội dung bên trong nest thì bấm **Use Selected Clip** lại để render bản mới.
+
 ## [0.6.3] - 2026-11-11
 
 ### Thay đổi
