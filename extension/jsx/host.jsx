@@ -357,7 +357,7 @@ var PRTrack = (function () {
     fail(message);
   }
   return {
-    version: '0.6.3',
+    version: '0.6.4',
     source: function () {
       return guard(function () {
         var s = sequence(),

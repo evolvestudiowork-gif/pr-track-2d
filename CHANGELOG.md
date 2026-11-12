@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.4] - 2026-11-12
+
 ### Thay đổi
 
 - Dùng được Nested Sequence làm Source. Khi bấm **Use Selected Clip**, plugin render Nested Sequence ra một file tạm (ProRes, cùng kích thước và frame rate với nest) rồi Track trên file đó. Sửa nội dung bên trong nest thì bấm **Use Selected Clip** lại để render bản mới.
@@ -72,7 +74,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.3...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.4...HEAD
+[0.6.4]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.4
 [0.6.3]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.3
 [0.6.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.2
 [0.6.1]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.1
