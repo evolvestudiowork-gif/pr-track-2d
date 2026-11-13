@@ -33,7 +33,7 @@ shutil.copytree(
     ignore=shutil.ignore_patterns("runtime", "config.json", "__pycache__", "*.pyc"),
 )
 shutil.copytree(runtime, stage / "extension/runtime", symlinks=True)
-for name in ["Install-PRTrack.command", "README-macOS.md"]:
+for name in ["Install-PRTrack.command", "README-macOS.md", "LICENSE"]:
     shutil.copy2(root / name, stage / name)
 (stage / "scripts").mkdir()
 shutil.copy2(root / "scripts/install-macos.sh", stage / "scripts/install-macos.sh")

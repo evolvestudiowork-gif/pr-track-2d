@@ -9,6 +9,7 @@ Khoanh một vùng trên video, bấm Track, rồi gắn Text hoặc Graphic ch�
 [![Lượt tải](https://img.shields.io/github/downloads/evolvestudiowork-gif/pr-track-2d/total?label=l%C6%B0%E1%BB%A3t%20t%E1%BA%A3i&color=4fb37a)](https://github.com/evolvestudiowork-gif/pr-track-2d/releases)
 ![Premiere Pro 2026–2027](https://img.shields.io/badge/Premiere%20Pro-2026%E2%80%932027-9999ff)
 ![Windows · macOS](https://img.shields.io/badge/Windows%20%C2%B7%20macOS-lightgrey)
+[![Giấy phép MIT](https://img.shields.io/badge/gi%E1%BA%A5y%20ph%C3%A9p-MIT-lightgrey)](LICENSE)
 
 [**Tải bản mới nhất**](https://github.com/evolvestudiowork-gif/pr-track-2d/releases/latest) · [Có gì mới](CHANGELOG.md) · [Báo lỗi](https://github.com/evolvestudiowork-gif/pr-track-2d/issues)
 
@@ -142,11 +143,6 @@ Tạo [Issue](https://github.com/evolvestudiowork-gif/pr-track-2d/issues) kèm:
 - thông báo lỗi và các bước dẫn tới lỗi,
 - nếu được: ảnh vùng đã khoanh hoặc một đoạn video ngắn.
 
-## Dành cho người phát triển
+## Mã nguồn và giấy phép
 
-Panel CEP (HTML/JS + ExtendScript) gọi một engine Python/OpenCV đóng gói sẵn. Cách build, kiểm thử và phát hành: xem [GITHUB-RELEASES.md](GITHUB-RELEASES.md) và [README-macOS.md](README-macOS.md).
-
-```sh
-npm ci
-npm run check && npm run lint && npm test && npm run test:engine
-```
+PR Track 2D là phần mềm mã nguồn mở theo giấy phép [MIT](LICENSE): bạn được dùng, sửa và chia sẻ lại, miễn giữ ghi chú bản quyền. Cấu trúc code, cách chạy kiểm thử và đóng góp: xem [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

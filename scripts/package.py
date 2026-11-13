@@ -19,6 +19,7 @@ files = [
     root / "Install-PRTrack.cmd",
     root / "scripts" / "Install.ps1",
     root / "README.md",
+    root / "LICENSE",
     root / "CAI-DAT.txt",
     root / "GITHUB-RELEASES.md",
 ]
