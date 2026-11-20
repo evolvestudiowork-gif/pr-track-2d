@@ -10,12 +10,16 @@ if pgrep -f '/Adobe Premiere Pro[^/]*/Contents/MacOS/' >/dev/null; then
 fi
 debug_mode="$(defaults read com.adobe.CSXS.12 PlayerDebugMode 2>/dev/null || true)"
 [[ "$debug_mode" == "1" ]] || { echo "CEP 12 development mode chua duoc cho phep. Ban beta chua ky so; installer khong tu doi thiet lap bao mat."; exit 1; }
+# The user chose to run this installer, so clear the download quarantine from the
+# plugin's own files only. macOS otherwise blocks the unsigned engine.
+xattr -dr com.apple.quarantine "$package_root" 2>/dev/null || true
 printf '%s\n' '{"command":"check"}' | "$engine" > /dev/null || { echo "Engine khong chay duoc. Kiem tra dung goi Apple Silicon/Intel va trang thai cho phep ung dung cua macOS."; exit 1; }
 extensions_root="$HOME/Library/Application Support/Adobe/CEP/extensions"
 mkdir -p "$extensions_root"
 destination="$extensions_root/vn.prtrack.panel"
 stage="$(mktemp -d "$extensions_root/.prtrack-stage.XXXXXX")"
 ditto "$source_dir" "$stage"
+xattr -dr com.apple.quarantine "$stage" 2>/dev/null || true
 printf '%s\n' '{"bundled":true,"python":""}' > "$stage/config.json"
 printf '%s\n' '{"command":"check"}' | "$stage/runtime/PRTrackEngine" > /dev/null
 if [[ -e "$destination" ]]; then

@@ -116,7 +116,11 @@ Kiểm tra lại bước 2 (cho phép extension chưa ký số), rồi khởi đ
 <details>
 <summary><b>macOS báo không mở được bộ cài hoặc engine</b></summary>
 
-Bản Mac chưa được Apple công chứng (notarization). Mở <b>System Settings → Privacy & Security</b> và chọn <b>Open Anyway</b> cho file bị chặn. Đảm bảo đã tải đúng gói arm64 hay x86_64 theo máy.
+Bản Mac chưa được Apple công chứng (notarization). Từ bản 0.6.5, bộ cài tự gỡ cờ "tải từ Internet" cho các file của plugin nên thường không còn bị chặn.
+
+Với bản cũ hơn, nếu macOS báo <b>"Python.framework" is damaged</b>: bấm <b>Cancel</b> (đừng bấm Move to Trash), mở Terminal, gõ <code>xattr -dr com.apple.quarantine </code> (có dấu cách cuối), kéo thư mục đã giải nén vào cửa sổ Terminal, nhấn Enter, rồi chạy lại bộ cài.
+
+Đảm bảo đã tải đúng gói arm64 hay x86_64 theo máy.
 
 </details>
 

@@ -33,6 +33,32 @@ shutil.copytree(
     ignore=shutil.ignore_patterns("runtime", "config.json", "__pycache__", "*.pyc"),
 )
 shutil.copytree(runtime, stage / "extension/runtime", symlinks=True)
+
+
+def codesign(*args):
+    subprocess.run(["codesign", *args], check=True)
+
+
+# PyInstaller leaves Python.framework with an invalid signature. Downloaded
+# (quarantined) copies are then reported as "damaged" by Gatekeeper, so sign
+# every framework and the engine again (ad-hoc) and verify all bundled code.
+staged_runtime = stage / "extension/runtime"
+frameworks = sorted(staged_runtime.rglob("*.framework"))
+for framework in frameworks:
+    codesign("--force", "--deep", "--sign", "-", str(framework))
+codesign("--force", "--sign", "-", str(staged_runtime / "PRTrackEngine"))
+for framework in frameworks:
+    codesign("--verify", "--deep", "--strict", str(framework))
+for library in [*staged_runtime.rglob("*.so"), *staged_runtime.rglob("*.dylib")]:
+    codesign("--verify", "--strict", str(library))
+codesign("--verify", "--strict", str(staged_runtime / "PRTrackEngine"))
+subprocess.run(
+    [str(staged_runtime / "PRTrackEngine")],
+    input=b'{"command":"check"}\n',
+    check=True,
+    capture_output=True,
+)
+
 for name in ["Install-PRTrack.command", "README-macOS.md", "LICENSE"]:
     shutil.copy2(root / name, stage / name)
 (stage / "scripts").mkdir()

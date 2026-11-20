@@ -6,6 +6,10 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+### Sửa lỗi
+
+- macOS báo "Python.framework is damaged" khi cài bản tải bằng trình duyệt. Engine bản Mac nay được ký lại và kiểm tra chữ ký khi đóng gói, và bộ cài tự gỡ cờ "tải từ Internet" cho riêng các file của plugin sau khi bạn mở nó.
+
 ## [0.6.4] - 2026-11-12
 
 ### Thay đổi

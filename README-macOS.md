@@ -18,9 +18,11 @@ Không cần cài Python trên máy nhận. Build runtime cần Python/OpenCV/Py
 
 ## Trạng thái ký số
 
-Đây là bản phát triển CEP chưa ký số; engine PyInstaller không có Developer ID/notarization cho phân phối đại trà. macOS có thể chặn khi tải từ Internet. Installer không gỡ quarantine, không tắt Gatekeeper và không tự bật CEP development mode. Cần kiểm chứng cài đặt trên Mac thật; để phát hành thuận tiện cần Developer ID, notarization và quy trình ký extension.
+Đây là bản phát triển CEP chưa ký số; engine PyInstaller chỉ được ký ad-hoc (không có Developer ID/notarization). Khi đóng gói, `package_macos.py` ký lại toàn bộ engine và kiểm tra chữ ký, vì PyInstaller để lại `Python.framework` với chữ ký hỏng (macOS báo "damaged").
 
-Nếu macOS từ chối mở, xem thông báo hệ thống hoặc hướng dẫn chính thức của Apple. Không coi build CI thành công là đã xác nhận Gatekeeper hay Premiere.
+File tải từ Internet bị macOS gắn cờ quarantine và Gatekeeper sẽ chặn engine chưa notarize. Vì người dùng đã chủ động mở bộ cài, installer gỡ cờ quarantine **chỉ trên các file của gói PR Track 2D** (thư mục đã giải nén và bản cài trong thư mục CEP). Installer không tắt Gatekeeper, không đổi thiết lập bảo mật nào khác và không tự bật CEP development mode.
+
+Để macOS không cảnh báo gì cần Developer ID, notarization và quy trình ký extension.
 
 ## Tính năng dùng chung
 
