@@ -11,7 +11,7 @@ import time
 import cv2
 import numpy as np
 
-ENGINE_VERSION = "0.6.4"
+ENGINE_VERSION = "0.6.5"
 MAX_SAMPLES = 1000000
 
 

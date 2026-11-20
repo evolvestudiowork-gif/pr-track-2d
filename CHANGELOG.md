@@ -6,6 +6,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 ## [Chưa phát hành]
 
+## [0.6.5] - 2026-11-20
+
 ### Sửa lỗi
 
 - macOS báo "Python.framework is damaged" khi cài bản tải bằng trình duyệt. Engine bản Mac nay được ký lại và kiểm tra chữ ký khi đóng gói, và bộ cài tự gỡ cờ "tải từ Internet" cho riêng các file của plugin sau khi bạn mở nó.
@@ -78,7 +80,8 @@ Khi phát hành, đổi tiêu đề `Chưa phát hành` thành số phiên bản
 
 - Thêm bản standalone cho macOS Apple Silicon (arm64) và Intel (x86_64), dùng chung Release với bản Windows.
 
-[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.4...HEAD
+[Chưa phát hành]: https://github.com/evolvestudiowork-gif/pr-track-2d/compare/v0.6.5...HEAD
+[0.6.5]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.5
 [0.6.4]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.4
 [0.6.3]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.3
 [0.6.2]: https://github.com/evolvestudiowork-gif/pr-track-2d/releases/tag/v0.6.2
